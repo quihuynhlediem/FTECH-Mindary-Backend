@@ -13,5 +13,4 @@ router.delete('/delete/:id', MeditationController.deleteMeditation);
 
 router.put('/update/:id', MeditationController.updateMeditation);
 
-
 export default router;

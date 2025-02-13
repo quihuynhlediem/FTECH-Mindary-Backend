@@ -12,6 +12,10 @@ const meditationSchema = new mongoose.Schema(
             required: true, 
             trim: true 
         },
+        embedding: { 
+            type: [Number], 
+            required: true 
+        }
     }, { 
         timestamps: true, 
     }

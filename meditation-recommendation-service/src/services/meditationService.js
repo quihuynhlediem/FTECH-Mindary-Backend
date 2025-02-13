@@ -1,4 +1,15 @@
 import Meditation from '../database/models/MeditationModel.js';
+import config from '../config/config.js';
+import { GoogleGenerativeAIEmbeddings } from '@langchain/google-genai';
+
+const embeddingsModel = new GoogleGenerativeAIEmbeddings({
+    apiKey: config.GEMINI_API_KEY,
+});
+
+const generateEmbedding = async (data) => {
+    const result = await embeddingsModel.generateEmbedding();
+    return result;
+};
 
 const createMeditation = async (meditationData) => {
     return await Meditation.save(meditationData);

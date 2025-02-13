@@ -11,8 +11,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@langchain/google-genai": "^0.1.8",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "langchain": "^0.3.15",
     "mongoose": "^8.10.0"
   },
   "devDependencies": {
