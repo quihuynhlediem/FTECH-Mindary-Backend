@@ -2,7 +2,7 @@ import MeditationService from '../services/meditationService.js';
 
 const createMeditation = async (req, res) => {
     try {
-        const meditation = await MeditationService.createMeditation(req.body);
+        const meditation = await MeditationService.createMeditation(req.body.title, req.body.content);
         res.status(201).json(meditation);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -17,6 +17,7 @@ const createMulipleMeditations = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
 const getAllMeditations = async (req, res) => {
     try {
         const meditations = await MeditationService.getAllMeditations();
@@ -41,7 +42,7 @@ const getMeditationById = async (req, res) => {
 
 const updateMeditation = async (req, res) => {
     try {
-        const meditation = await MeditationService.updateMeditation(req.params.id, req.body);
+        const meditation = await MeditationService.updateMeditation(req.params.id, req.body.title, req.body.content);
         if (!meditation) {
             res.status(404).json({ message: 'Meditation not found' });
             return;
@@ -59,7 +60,7 @@ const deleteMeditation = async (req, res) => {
             res.status(404).json({ message: 'Meditation not found' });
             return;
         }
-        res.json(meditation);
+        res.status(204).send(); 
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

@@ -8,9 +8,18 @@ importers:
 
   .:
     dependencies:
+      '@google/generative-ai':
+        specifier: ^0.21.0
+        version: 0.21.0
+      '@langchain/core':
+        specifier: ^0.3.40
+        version: 0.3.40(openai@4.83.0(zod@3.24.1))
       '@langchain/google-genai':
         specifier: ^0.1.8
-        version: 0.1.8(@langchain/core@0.3.39(openai@4.83.0(zod@3.24.1)))(zod@3.24.1)
+        version: 0.1.8(@langchain/core@0.3.40(openai@4.83.0(zod@3.24.1)))(zod@3.24.1)
+      '@langchain/mongodb':
+        specifier: ^0.1.0
+        version: 0.1.0(@langchain/core@0.3.40(openai@4.83.0(zod@3.24.1)))
       dotenv:
         specifier: ^16.4.7
         version: 16.4.7
@@ -19,10 +28,16 @@ importers:
         version: 4.21.2
       langchain:
         specifier: ^0.3.15
-        version: 0.3.15(@langchain/core@0.3.39(openai@4.83.0(zod@3.24.1)))(@langchain/google-genai@0.1.8(@langchain/core@0.3.39(openai@4.83.0(zod@3.24.1)))(zod@3.24.1))(openai@4.83.0(zod@3.24.1))
+        version: 0.3.15(@langchain/core@0.3.40(openai@4.83.0(zod@3.24.1)))(@langchain/google-genai@0.1.8(@langchain/core@0.3.40(openai@4.83.0(zod@3.24.1)))(zod@3.24.1))(openai@4.83.0(zod@3.24.1))
+      mongodb:
+        specifier: ^6.13.0
+        version: 6.13.0
       mongoose:
         specifier: ^8.10.0
         version: 8.10.0
+      uuid:
+        specifier: ^11.0.5
+        version: 11.0.5
     devDependencies:
       cross-env:
         specifier: ^7.0.3
@@ -40,8 +55,8 @@ packages:
     resolution: {integrity: sha512-7XhUbtnlkSEZK15kN3t+tzIMxsbKm/dSkKBFalj+20NvPKe1kBY7mR2P7vuijEn+f06z5+A8bVGKO0v39cr6Wg==}
     engines: {node: '>=18.0.0'}
 
-  '@langchain/core@0.3.39':
-    resolution: {integrity: sha512-muXs4asy1A7qDtcdznxqyBfxf4N6qxofY/S0c95vbsWa0r9YAE2PttHIjcuxSy1q2jUiTkpCcgFEjNJRQRVhEw==}
+  '@langchain/core@0.3.40':
+    resolution: {integrity: sha512-RGhJOTzJv6H+3veBAnDlH2KXuZ68CXMEg6B6DPTzL3IGDyd+vLxXG4FIttzUwjdeQKjrrFBwlXpJDl7bkoApzQ==}
     engines: {node: '>=18'}
 
   '@langchain/google-genai@0.1.8':
@@ -49,6 +64,12 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       '@langchain/core': '>=0.3.17 <0.4.0'
+
+  '@langchain/mongodb@0.1.0':
+    resolution: {integrity: sha512-5yO6aNMkdtxlJBjR8LFuvgDgnM/sbAhYe5AkN8VznPkpEoI6Pq4zjvl8gB3YTVpzdrp38HT5Z40VEwNEDHpwIw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@langchain/core': '>=0.2.21 <0.4.0'
 
   '@langchain/openai@0.4.3':
     resolution: {integrity: sha512-QPtkhzJElChagIybWTHZ0IRf2cwyjg9AhbJovYiPjOOmkwRBBEbfsA3YKr97JEKUQzKvMq/rcAZRvGvGEFGeLQ==}
@@ -782,6 +803,10 @@ packages:
     resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
     hasBin: true
 
+  uuid@11.0.5:
+    resolution: {integrity: sha512-508e6IcKLrhxKdBbcA2b4KQZlLVp2+J5UwQ6F7Drckkc5N9ZJwFa4TgWtsww9UG8fGHbm6gbV19TdM5pQ4GaIA==}
+    hasBin: true
+
   vary@1.1.2:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
@@ -828,7 +853,7 @@ snapshots:
 
   '@google/generative-ai@0.21.0': {}
 
-  '@langchain/core@0.3.39(openai@4.83.0(zod@3.24.1))':
+  '@langchain/core@0.3.40(openai@4.83.0(zod@3.24.1))':
     dependencies:
       '@cfworker/json-schema': 4.1.1
       ansi-styles: 5.2.0
@@ -845,17 +870,30 @@ snapshots:
     transitivePeerDependencies:
       - openai
 
-  '@langchain/google-genai@0.1.8(@langchain/core@0.3.39(openai@4.83.0(zod@3.24.1)))(zod@3.24.1)':
+  '@langchain/google-genai@0.1.8(@langchain/core@0.3.40(openai@4.83.0(zod@3.24.1)))(zod@3.24.1)':
     dependencies:
       '@google/generative-ai': 0.21.0
-      '@langchain/core': 0.3.39(openai@4.83.0(zod@3.24.1))
+      '@langchain/core': 0.3.40(openai@4.83.0(zod@3.24.1))
       zod-to-json-schema: 3.24.1(zod@3.24.1)
     transitivePeerDependencies:
       - zod
 
-  '@langchain/openai@0.4.3(@langchain/core@0.3.39(openai@4.83.0(zod@3.24.1)))':
+  '@langchain/mongodb@0.1.0(@langchain/core@0.3.40(openai@4.83.0(zod@3.24.1)))':
     dependencies:
-      '@langchain/core': 0.3.39(openai@4.83.0(zod@3.24.1))
+      '@langchain/core': 0.3.40(openai@4.83.0(zod@3.24.1))
+      mongodb: 6.13.0
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - gcp-metadata
+      - kerberos
+      - mongodb-client-encryption
+      - snappy
+      - socks
+
+  '@langchain/openai@0.4.3(@langchain/core@0.3.40(openai@4.83.0(zod@3.24.1)))':
+    dependencies:
+      '@langchain/core': 0.3.40(openai@4.83.0(zod@3.24.1))
       js-tiktoken: 1.0.18
       openai: 4.83.0(zod@3.24.1)
       zod: 3.24.1
@@ -864,9 +902,9 @@ snapshots:
       - encoding
       - ws
 
-  '@langchain/textsplitters@0.1.0(@langchain/core@0.3.39(openai@4.83.0(zod@3.24.1)))':
+  '@langchain/textsplitters@0.1.0(@langchain/core@0.3.40(openai@4.83.0(zod@3.24.1)))':
     dependencies:
-      '@langchain/core': 0.3.39(openai@4.83.0(zod@3.24.1))
+      '@langchain/core': 0.3.40(openai@4.83.0(zod@3.24.1))
       js-tiktoken: 1.0.18
 
   '@mongodb-js/saslprep@1.2.0':
@@ -1227,11 +1265,11 @@ snapshots:
 
   kareem@2.6.3: {}
 
-  langchain@0.3.15(@langchain/core@0.3.39(openai@4.83.0(zod@3.24.1)))(@langchain/google-genai@0.1.8(@langchain/core@0.3.39(openai@4.83.0(zod@3.24.1)))(zod@3.24.1))(openai@4.83.0(zod@3.24.1)):
+  langchain@0.3.15(@langchain/core@0.3.40(openai@4.83.0(zod@3.24.1)))(@langchain/google-genai@0.1.8(@langchain/core@0.3.40(openai@4.83.0(zod@3.24.1)))(zod@3.24.1))(openai@4.83.0(zod@3.24.1)):
     dependencies:
-      '@langchain/core': 0.3.39(openai@4.83.0(zod@3.24.1))
-      '@langchain/openai': 0.4.3(@langchain/core@0.3.39(openai@4.83.0(zod@3.24.1)))
-      '@langchain/textsplitters': 0.1.0(@langchain/core@0.3.39(openai@4.83.0(zod@3.24.1)))
+      '@langchain/core': 0.3.40(openai@4.83.0(zod@3.24.1))
+      '@langchain/openai': 0.4.3(@langchain/core@0.3.40(openai@4.83.0(zod@3.24.1)))
+      '@langchain/textsplitters': 0.1.0(@langchain/core@0.3.40(openai@4.83.0(zod@3.24.1)))
       js-tiktoken: 1.0.18
       js-yaml: 4.1.0
       jsonpointer: 5.0.1
@@ -1243,7 +1281,7 @@ snapshots:
       zod: 3.24.1
       zod-to-json-schema: 3.24.1(zod@3.24.1)
     optionalDependencies:
-      '@langchain/google-genai': 0.1.8(@langchain/core@0.3.39(openai@4.83.0(zod@3.24.1)))(zod@3.24.1)
+      '@langchain/google-genai': 0.1.8(@langchain/core@0.3.40(openai@4.83.0(zod@3.24.1)))(zod@3.24.1)
     transitivePeerDependencies:
       - encoding
       - openai
@@ -1543,6 +1581,8 @@ snapshots:
   utils-merge@1.0.1: {}
 
   uuid@10.0.0: {}
+
+  uuid@11.0.5: {}
 
   vary@1.1.2: {}
 
