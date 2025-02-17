@@ -6,6 +6,12 @@ import com.mindary.diary.models.DiaryEntity;
 import com.mindary.diary.models.DiaryImage;
 import com.mindary.diary.services.DiaryImageService;
 import com.mindary.diary.services.DiaryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -24,6 +30,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+@Tag(name = "Diary APIs", description = "These APIs are used to handle diary entries.")
 @RestController
 @RequestMapping(path = "/api/v1/diaries")
 @RequiredArgsConstructor
@@ -33,6 +40,12 @@ public class DiaryController {
     private final Mapper<DiaryEntity, DiaryDto> diaryMapper;
     private final DiaryImageService diaryImageService;
 
+    @Operation(summary = "Get diaries by user ID", description = "Retrieve a paginated list of diaries for a specific user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful retrieval of diaries", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden - User does not have access", content = {@Content(schema = @Schema())}),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = {@Content(schema = @Schema())})
+    })
     @PreAuthorize("#userId.toString() == authentication.name")
     @GetMapping(path = "/user/{userId}")
     public Page<DiaryDto> getDiariesByUserId(
@@ -44,7 +57,13 @@ public class DiaryController {
         return foundDiaries.map(diaryMapper::mapTo);
     }
 
-
+    @Operation(summary = "Get diary by ID", description = "Retrieve a specific diary by its ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful retrieval of diary", content = @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryDto.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden - User does not have access", content = {@Content(schema = @Schema())}),
+            @ApiResponse(responseCode = "404", description = "Diary not found", content = {@Content(schema = @Schema())}),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = {@Content(schema = @Schema())})
+    })
     @PreAuthorize("#userId.toString() == authentication.name")
     @GetMapping(path = "{diaryId}/user/{userId}")
     public ResponseEntity<DiaryDto> getDiaryById(
@@ -58,6 +77,13 @@ public class DiaryController {
         }).orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @Operation(summary = "Get diary by date", description = "Retrieve a diary for a specific user on a given date.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful retrieval of diary", content = @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryDto.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden - User does not have access", content = {@Content(schema = @Schema())}),
+            @ApiResponse(responseCode = "404", description = "Diary not found", content = {@Content(schema = @Schema())}),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = {@Content(schema = @Schema())})
+    })
     @PreAuthorize("#userId.toString() == authentication.name")
     @GetMapping(path = "/user/{userId}/{date}")
     public ResponseEntity<DiaryDto> getDiaryByTimezone(
@@ -74,6 +100,13 @@ public class DiaryController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    @Operation(summary = "Create a new diary", description = "Create a new diary entry for a user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Diary created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryDto.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden - User does not have access", content = {@Content(schema = @Schema())}),
+            @ApiResponse(responseCode = "409", description = "Conflict - Diary already exists for the given date", content = {@Content(schema = @Schema())}),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = {@Content(schema = @Schema())})
+    })
     @PreAuthorize("#userId.toString() == authentication.name")
     @PostMapping(path = "/user/{userId}")
     public ResponseEntity<DiaryDto> createDiary(
@@ -100,6 +133,14 @@ public class DiaryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(diaryMapper.mapTo(savedDiary));
     }
 
+    @Operation(summary = "Create a diary on a target date", description = "Create a diary entry for a user on a specific date.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Diary created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryDto.class))),
+            @ApiResponse(responseCode = "400", description = "Bad Request - Target date is in the future", content = {@Content(schema = @Schema())}),
+            @ApiResponse(responseCode = "403", description = "Forbidden - User does not have access", content = {@Content(schema = @Schema())}),
+            @ApiResponse(responseCode = "409", description = "Conflict - Diary already exists for the given date", content = {@Content(schema = @Schema())}),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = {@Content(schema = @Schema())})
+    })
     @PreAuthorize("#userId.toString() == authentication.name")
     @PostMapping(path = "/user/{userId}/{date}")
     public ResponseEntity<DiaryDto> createDiaryOnTargetDate(
@@ -132,6 +173,13 @@ public class DiaryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(diaryMapper.mapTo(savedDiary));
     }
 
+    @Operation(summary = "Update a diary", description = "Partially update an existing diary entry.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Diary updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryDto.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden - User does not have access", content = {@Content(schema = @Schema())}),
+            @ApiResponse(responseCode = "404", description = "Diary not found", content = {@Content(schema = @Schema())}),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = {@Content(schema = @Schema())})
+    })
     @PreAuthorize("#userId.toString() == authentication.name")
     @PatchMapping(path = "/{diaryId}/user/{userId}")
     public ResponseEntity<DiaryDto> updateDiary(
