@@ -15,4 +15,6 @@ public interface ConversationRepository extends MongoRepository<Conversation, St
     List<Conversation> findByUserIdOrderByLastMessageAtDesc(UUID userId);
 
     List<Conversation> findByFollowUpDueLessThanAndIsFollowedUpFalse(LocalDateTime dateTime);
+
+    void deleteByIdAndUserId(String id, UUID userId);
 }

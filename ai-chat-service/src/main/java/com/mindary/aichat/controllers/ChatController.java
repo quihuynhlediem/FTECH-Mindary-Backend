@@ -1,7 +1,9 @@
 package com.mindary.aichat.controllers;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.http.MediaType;
@@ -17,8 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mindary.aichat.dto.ChatRequest;
 import com.mindary.aichat.models.ChatMessage;
 import com.mindary.aichat.models.Conversation;
-import com.mindary.aichat.models.MessageType;
 import com.mindary.aichat.models.FollowUpAnalysis;
+import com.mindary.aichat.models.MessageType;
 import com.mindary.aichat.repositories.ChatMessageRepository;
 import com.mindary.aichat.services.ConversationService;
 import com.mindary.aichat.services.GeminiService;
@@ -39,19 +41,27 @@ public class ChatController {
     private static final int CHAT_HISTORY_LIMIT = 7; // Limit to last 7 messages for development v1
 
     @PostMapping("/conversations")
-    public ResponseEntity<Conversation> createConversation(@Valid @RequestBody ChatRequest chatRequest) {
-        return ResponseEntity.ok(conversationService.createConversation(
+    public ResponseEntity<Map<String, Object>> createConversation(@Valid @RequestBody ChatRequest chatRequest) {
+        Conversation conversation = conversationService.createConversation(
                 chatRequest.getUserId(),
                 chatRequest.getMessage()
-        ));
+        );
+
+        List<ChatMessage> messages = conversationService.getConversationHistory(conversation.getId());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("conversation", conversation);
+        response.put("messages", messages);
+
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/conversations/{userId}")
+    @GetMapping("/conversations/user/{userId}")
     public ResponseEntity<List<Conversation>> getUserConversations(@PathVariable UUID userId) {
         return ResponseEntity.ok(conversationService.getUserConversations(userId));
     }
 
-    @PostMapping("/conversations/{conversationId}/messages")
+    @PostMapping(value = "/conversations/{conversationId}/messages", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ChatMessage> sendMessage(
             @PathVariable String conversationId,
             @Valid @RequestBody ChatRequest chatRequest) {
@@ -113,6 +123,54 @@ public class ChatController {
     @DeleteMapping("/history/{userId}")
     public ResponseEntity<Void> deleteChatHistory(@PathVariable UUID userId) {
         chatMessageRepository.deleteByUserId(userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/conversations/{conversationId}")
+    public ResponseEntity<Map<String, Object>> getConversation(@PathVariable String conversationId) {
+        Conversation conversation = conversationService.getConversation(conversationId);
+        if (conversation == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<ChatMessage> messages = conversationService.getConversationHistory(conversationId);
+        Map<String, Object> response = new HashMap<>();
+        response.put("conversation", conversation);
+        response.put("messages", messages);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/conversations/{conversationId}")
+    public ResponseEntity<Map<String, String>> deleteConversation(@PathVariable String conversationId) {
+        String title = conversationService.deleteConversation(conversationId);
+        Map<String, String> response = new HashMap<>();
+
+        if (title == null) {
+            response.put("error", "Cannot delete conversation: not found or error occurred");
+            return ResponseEntity.status(404).body(response);
+        }
+
+        response.put("message", String.format("Successfully deleted conversation: %s", title));
+        return ResponseEntity.ok(response);
+    }
+
+    // Get all users conversations with summary
+    @GetMapping("/users/{userId}/conversations")
+    public ResponseEntity<List<Map<String, Object>>> getUserConversationSummaries(@PathVariable UUID userId) {
+        return ResponseEntity.ok(conversationService.getUserConversationSummaries(userId));
+    }
+
+    @GetMapping("/conversations/{conversationId}/messages")
+    public ResponseEntity<List<ChatMessage>> getConversationMessages(@PathVariable String conversationId) {
+        return ResponseEntity.ok(conversationService.getConversationHistory(conversationId));
+    }
+
+    @DeleteMapping("/conversations/{conversationId}/messages/{messageId}")
+    public ResponseEntity<Void> deleteMessage(
+            @PathVariable String conversationId,
+            @PathVariable String messageId) {
+        conversationService.deleteMessage(conversationId, messageId);
         return ResponseEntity.ok().build();
     }
 }

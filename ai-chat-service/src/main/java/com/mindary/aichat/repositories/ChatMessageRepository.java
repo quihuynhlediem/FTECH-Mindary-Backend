@@ -15,7 +15,11 @@ public interface ChatMessageRepository extends MongoRepository<ChatMessage, Stri
 
     void deleteByUserId(UUID userId);
 
+    void deleteByConversationId(String conversationId);
+
     List<ChatMessage> findByConversationIdOrderByTimestampDesc(String conversationId);
 
     List<ChatMessage> findByConversationIdOrderByTimestampAsc(String conversationId);
+
+    long countByConversationId(String conversationId);
 }

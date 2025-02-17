@@ -1,7 +1,9 @@
 package com.mindary.aichat.services;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.scheduling.annotation.Scheduled;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.mindary.aichat.models.ChatMessage;
 import com.mindary.aichat.models.Conversation;
 import com.mindary.aichat.models.ConversationStatus;
+import com.mindary.aichat.models.FollowUpAnalysis;
 import com.mindary.aichat.models.FollowUpType;
 import com.mindary.aichat.models.MessageType;
 import com.mindary.aichat.repositories.ChatMessageRepository;
@@ -28,13 +31,45 @@ public class ConversationService {
     private final GeminiService geminiService;
 
     public Conversation createConversation(UUID userId, String initialMessage) {
+        // Generate AI response to initial message
+        String response = geminiService.generateResponse(initialMessage, "", null);
+
+        // create and save conversation
         Conversation conversation = new Conversation();
         conversation.setUserId(userId);
         conversation.setTitle(generateTitle(initialMessage));
         conversation.setCreatedAt(LocalDateTime.now());
         conversation.setLastMessageAt(LocalDateTime.now());
+        conversation.setLastMessage(initialMessage);
         conversation.setStatus(ConversationStatus.ACTIVE);
-        return conversationRepository.save(conversation);
+        conversation = conversationRepository.save(conversation);
+
+        // create and save initial chat message
+        ChatMessage chatMessage = new ChatMessage();
+        chatMessage.setConversationId(conversation.getId());
+        chatMessage.setUserId(userId);
+        chatMessage.setType(MessageType.USER);
+        chatMessage.setMessage(initialMessage);
+        chatMessage.setResponse(response);
+        chatMessage.setTimestamp(LocalDateTime.now());
+        chatMessageRepository.save(chatMessage);
+
+        // analyze for potential follow-up
+        analyzeAndScheduleFollowUp(conversation.getId(), initialMessage);
+
+        return conversation;
+    }
+
+    private void analyzeAndScheduleFollowUp(String conversationId, String message) {
+        FollowUpAnalysis analysis = geminiService.analyzeForFollowUp(message);
+        if (analysis.isNeedsFollowUp()) {
+            Conversation conversation = getConversation(conversationId);
+            scheduleFollowUp(
+                    conversation,
+                    analysis.getFollowUpType(),
+                    LocalDateTime.now().plusHours(analysis.getFollowUpHours())
+            );
+        }
     }
 
     public List<ChatMessage> getConversationHistory(String conversationId) {
@@ -42,7 +77,7 @@ public class ConversationService {
     }
 
     private String generateTitle(String message) {
-        // enerate a concise title based on the first message with my man Gemini
+        // generate title with my man Gemini
         return geminiService.generateConversationTitle(message);
     }
 
@@ -96,7 +131,64 @@ public class ConversationService {
     }
 
     public Conversation getConversation(String conversationId) {
-        return conversationRepository.findById(conversationId)
-                .orElseThrow(() -> new RuntimeException("Conversation not found"));
+        try {
+            log.info("Fetching conversation: {}", conversationId);
+            return conversationRepository.findById(conversationId)
+                    .orElse(null);
+        } catch (Exception e) {
+            log.error("Error fetching conversation {}: {}", conversationId, e.getMessage());
+            return null;
+        }
+    }
+
+    public String deleteConversation(String conversationId) {
+        try {
+            log.info("Attempting to delete conversation: {}", conversationId);
+            Conversation conversation = conversationRepository.findById(conversationId).orElse(null);
+            if (conversation == null) {
+                log.warn("Conversation not found: {}", conversationId);
+                return null;
+            }
+
+            String title = conversation.getTitle();
+            chatMessageRepository.deleteByConversationId(conversationId);
+            conversationRepository.deleteById(conversationId);
+            log.info("Successfully deleted conversation: {} ({})", title, conversationId);
+            return title;
+        } catch (Exception e) {
+            log.error("Failed to delete conversation {}: {}", conversationId, e.getMessage());
+            return null;
+        }
+    }
+
+    public void deleteMessage(String conversationId, String messageId) {
+        ChatMessage message = chatMessageRepository.findById(messageId)
+                .orElseThrow(() -> new RuntimeException("Message not found"));
+
+        // Verify message belongs to conversation
+        if (!message.getConversationId().equals(conversationId)) {
+            throw new RuntimeException("Message does not belong to this conversation");
+        }
+
+        chatMessageRepository.deleteById(messageId);
+    }
+
+    public List<Map<String, Object>> getUserConversationSummaries(UUID userId) {
+        List<Conversation> conversations = conversationRepository.findByUserIdOrderByLastMessageAtDesc(userId);
+
+        return conversations.stream().map(conv -> {
+            Map<String, Object> summary = new HashMap<>();
+            summary.put("id", conv.getId());
+            summary.put("title", conv.getTitle());
+            summary.put("lastMessage", conv.getLastMessage());
+            summary.put("lastMessageAt", conv.getLastMessageAt());
+            summary.put("status", conv.getStatus());
+
+            // Get message count
+            long messageCount = chatMessageRepository.countByConversationId(conv.getId());
+            summary.put("messageCount", messageCount);
+
+            return summary;
+        }).toList();
     }
 }
