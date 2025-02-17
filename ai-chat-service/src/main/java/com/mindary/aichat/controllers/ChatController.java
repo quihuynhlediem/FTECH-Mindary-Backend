@@ -114,18 +114,6 @@ public class ChatController {
         }
     }
 
-    @GetMapping("/history/{userId}")
-    public ResponseEntity<List<ChatMessage>> getChatHistory(@PathVariable UUID userId) {
-        List<ChatMessage> chatHistory = chatMessageRepository.findByUserIdOrderByTimestampDesc(userId);
-        return ResponseEntity.ok(chatHistory);
-    }
-
-    @DeleteMapping("/history/{userId}")
-    public ResponseEntity<Void> deleteChatHistory(@PathVariable UUID userId) {
-        chatMessageRepository.deleteByUserId(userId);
-        return ResponseEntity.ok().build();
-    }
-
     @GetMapping("/conversations/{conversationId}")
     public ResponseEntity<Map<String, Object>> getConversation(@PathVariable String conversationId) {
         Conversation conversation = conversationService.getConversation(conversationId);
