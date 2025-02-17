@@ -12,6 +12,6 @@ import reactor.core.publisher.Mono;
 
 @Component
 public interface IdentityClient {
-    @PostExchange(url = "/api/v1/auth/verifyToken", contentType = MediaType.APPLICATION_JSON_VALUE)
+    @PostExchange(url = "/api/v1/auth/verify-token", contentType = MediaType.APPLICATION_JSON_VALUE)
     Mono<ResponseEntity<VerifyTokenResponse>> verifyToken(@RequestBody VerifyTokenRequest verifyTokenRequest);
 }

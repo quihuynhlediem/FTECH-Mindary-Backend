@@ -4,6 +4,7 @@ import com.mindary.diary.security.CustomFilter;
 import com.mindary.diary.services.AuthenticationService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,7 +20,7 @@ public class SecurityConfig {
 
     @Bean
     public CustomFilter customFilter(AuthenticationService authenticationService) {
-        return new CustomFilter(authenticationService);
+        return  new CustomFilter(authenticationService);
     }
 
     @Bean
@@ -29,7 +30,9 @@ public class SecurityConfig {
     ) throws Exception {
         http
                 .authorizeHttpRequests(auth ->
-                        auth.anyRequest().authenticated()
+                        auth
+                                .requestMatchers(HttpMethod.GET, "/diary-entry-service/v3/api-docs").permitAll()
+                                .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(

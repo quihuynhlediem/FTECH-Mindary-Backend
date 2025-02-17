@@ -37,13 +37,14 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     @NonFinal
     private final String[] publicEndpoints = {
             "/api/v1/auth/login",
-            "/api/v1/auth/signup"
+            "/api/v1/auth/signup",
+            "/api/v1/auth/verify-token",
+            "/identity-service/v3/api-docs",
+            "/diary-entry-service/v3/api-docs",
     };
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        log.info("Authentication Filter");
-
         // If this is public api -> continue to next filter
         if (isPublicEndpoint(exchange.getRequest())) {
             return chain.filter(exchange);
@@ -61,6 +62,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 
         return identityService.verifyToken(token).flatMap(verifyTokenResponseResponseEntity -> {
             VerifyTokenResponse verifyTokenResponse = verifyTokenResponseResponseEntity.getBody();
+
             assert verifyTokenResponse != null;
             if (verifyTokenResponse.isValid()) {
                 return chain.filter(exchange);

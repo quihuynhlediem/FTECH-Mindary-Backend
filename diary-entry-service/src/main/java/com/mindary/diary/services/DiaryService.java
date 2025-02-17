@@ -5,11 +5,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public interface DiaryService {
+
+    DiaryEntity create(UUID userId, String diary);
 
     DiaryEntity save(DiaryEntity diary);
 
@@ -20,4 +23,8 @@ public interface DiaryService {
     DiaryEntity partialUpdate(UUID diaryId,DiaryEntity diaryEntity);
 
     Page<DiaryEntity> findByUserId(UUID userId, Pageable pageable);
+
+    Optional<DiaryEntity> findByUserIdAndDate(UUID userId, String timezone);
+
+    Optional<DiaryEntity> findByUserIdAndDate(UUID userId, LocalDate targetDate);
 }

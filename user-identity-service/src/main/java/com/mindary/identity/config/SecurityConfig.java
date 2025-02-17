@@ -36,7 +36,10 @@ public class SecurityConfig {
     ) throws Exception {
         http
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                                .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/auth/signup").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/auth/verify-token").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/identity-service/v3/api-docs").permitAll()
 //                                .requestMatchers("/api/v1/customers/**").authenticated()
                                 .anyRequest().authenticated()
                 )

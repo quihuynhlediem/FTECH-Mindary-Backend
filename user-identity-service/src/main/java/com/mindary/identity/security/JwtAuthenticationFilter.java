@@ -7,17 +7,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.server.ServerHttpRequest;
-import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -36,17 +32,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (token != null) {
                 UserDetails userDetails = authenticationService.validateToken(token);
 
-                String role = userDetails.getAuthorities().stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .findFirst()
-                        .orElse(null);
-
-                log.info("Extracted role: {}", role);
-
-                UUID userId = ((SystemUserDetails) userDetails).getId();
-
-                log.info("Extracted user id: {}", userId);
-
                 // Avoid race conditions across multiple threads
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails,
@@ -55,7 +40,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 );
                 SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
                 securityContext.setAuthentication(authentication);
-
                 SecurityContextHolder.setContext(securityContext);
             }
         } catch (Exception e) {

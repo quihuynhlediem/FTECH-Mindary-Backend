@@ -6,8 +6,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 public interface AuthenticationService {
     UserDetails authenticate(String username, String password);
-    String generateToken(UserDetails userDetails);
+    String generateAccessToken(UserDetails userDetails);
+    String generateRefreshToken(UserDetails userDetails);
     UserDetails validateToken(String token);
     UserDetails registerUser(String userName, String password, String email, User.UserRole userRole);
-    VerifyTokenResponse verifyToken(String token);
+    VerifyTokenResponse verifyAccessToken(String token);
 }
