@@ -8,6 +8,7 @@ router.post('/create/multiple', MeditationController.createMulipleMeditations);
 
 router.get('/get/all', MeditationController.getAllMeditations);
 router.get('/get/:id', MeditationController.getMeditationById);
+router.post('/get/recommended', MeditationController.getRecommendedMeditation);
 
 router.delete('/delete/:id', MeditationController.deleteMeditation);
 

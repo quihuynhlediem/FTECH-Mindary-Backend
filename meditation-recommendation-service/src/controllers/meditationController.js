@@ -40,6 +40,15 @@ const getMeditationById = async (req, res) => {
     }
 };
 
+const getRecommendedMeditation = async (req, res) => {
+    try {
+        const meditation = await MeditationService.getRecommendedMeditation(req.body.userInput);
+        res.json(meditation);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 const updateMeditation = async (req, res) => {
     try {
         const meditation = await MeditationService.updateMeditation(req.params.id, req.body.title, req.body.content);
@@ -55,11 +64,7 @@ const updateMeditation = async (req, res) => {
 
 const deleteMeditation = async (req, res) => {
     try {
-        const meditation = await MeditationService.deleteMeditation(req.params.id);
-        if (!meditation) {
-            res.status(404).json({ message: 'Meditation not found' });
-            return;
-        }
+        await MeditationService.deleteMeditation(req.params.id);
         res.status(204).send(); 
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -72,5 +77,6 @@ export default {
     getAllMeditations, 
     getMeditationById, 
     updateMeditation, 
-    deleteMeditation 
+    deleteMeditation,
+    getRecommendedMeditation 
 };

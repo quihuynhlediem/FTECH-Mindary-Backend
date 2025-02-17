@@ -51,6 +51,23 @@ const getMeditationById = async (meditationId) => {
     return await Meditation.findById(meditationId);
 };
 
+const getRecommendedMeditation = async (userInput) => {
+    try {
+        // 🔹 Perform a similarity search with the input
+        const results = await vectorStore.similaritySearch(userInput, 1);
+
+        // 🔹 If a meditation is found, return it
+        if (results.length > 0) {
+            return { success: true, meditation: results[0] };
+        } else {
+            return { success: false, message: "No relevant meditation found." };
+        }
+    } catch (error) {
+        console.error("❌ Error retrieving meditation:", error);
+        return { success: false, message: "Failed to retrieve meditation." };
+    }
+};
+
 const updateMeditation = async (meditationId, newTitle, newContent) => {
     try {
         const doc = new Document({
@@ -70,7 +87,7 @@ const updateMeditation = async (meditationId, newTitle, newContent) => {
 };
 
 const deleteMeditation = async (meditationId) => {
-    await vectorStore.delete({ ids: [meditationId] });
+    return await vectorStore.delete({ ids: [meditationId] });
 };
 
 export default { 
@@ -79,5 +96,6 @@ export default {
     getAllMeditations, 
     getMeditationById, 
     updateMeditation, 
-    deleteMeditation 
+    deleteMeditation,
+    getRecommendedMeditation 
 };
