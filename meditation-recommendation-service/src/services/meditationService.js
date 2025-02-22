@@ -3,6 +3,8 @@ import llmModelConfig from '../config/llmModelConfig.js';
 import { vectorStore } from '../database/connection.js';
 import { Document } from "@langchain/core/documents";
 import { v4 as uuidv4 } from "uuid";
+import { buildSearchPrompt } from '../utils/prompt.js';
+
 
 const createMeditation = async (title, content) => {
     const meditationId = uuidv4();
@@ -34,7 +36,6 @@ const createMulipleMeditations = async (meditationsData) => {
         }
     }));
 
-
     await vectorStore.addDocuments(
         documents,
         { 
@@ -51,17 +52,23 @@ const getMeditationById = async (meditationId) => {
     return await Meditation.findById(meditationId);
 };
 
-const getRecommendedMeditation = async (userInput) => {
+const getRecommendedMeditation = async (diaryAnalysis) => {
     try {
-        // 🔹 Perform a similarity search with the input
-        const results = await vectorStore.similaritySearch(userInput, 1);
-
-        // 🔹 If a meditation is found, return it
-        if (results.length > 0) {
-            return { success: true, meditation: results[0] };
-        } else {
-            return { success: false, message: "No relevant meditation found." };
-        }
+        if (!diaryAnalysis) {
+            throw new Error("Missing diaryAnalysis in the request body.");
+        }      
+        const prompt = buildSearchPrompt({diaryAnalysis});
+        const retrievedMeditations = await vectorStore.similaritySearch(prompt, 2);
+        console.log(retrievedMeditations);
+        const meditationsContent = retrievedMeditations.map(doc => doc.pageContent).join("\n\n");
+        console.log(meditationsContent);
+        const messages = await llmModelConfig.prompt.invoke({
+            question: prompt,
+            context: meditationsContent,
+          });
+        const answer = await llmModelConfig.llm.invoke(messages);
+        console.log(answer);
+        return answer;
     } catch (error) {
         console.error("❌ Error retrieving meditation:", error);
         return { success: false, message: "Failed to retrieve meditation." };

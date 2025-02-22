@@ -42,7 +42,7 @@ const getMeditationById = async (req, res) => {
 
 const getRecommendedMeditation = async (req, res) => {
     try {
-        const meditation = await MeditationService.getRecommendedMeditation(req.body.userInput);
+        const meditation = await MeditationService.getRecommendedMeditation(req.body);
         res.json(meditation);
     } catch (error) {
         res.status(500).json({ message: error.message });
