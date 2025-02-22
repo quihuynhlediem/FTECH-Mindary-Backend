@@ -11,6 +11,7 @@ import lombok.Data;
 @Data
 @Document(collection = "chat_messages")
 public class ChatMessage {
+
     @Id
     private String id;
     private UUID userId;

@@ -12,8 +12,4 @@ public class FollowUpAnalysis {
     public boolean isNeedsFollowUp() {
         return needsFollowUp;
     }
-
-    public boolean needsFollowUp() {
-        return needsFollowUp;
-    }
 }

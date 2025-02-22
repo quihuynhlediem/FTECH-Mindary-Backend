@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class GeminiConfig {
 
-    @Value("${gemini.api.key}")
+    @Value("${gemini.api.key}") // take from application.properties
     private String apiKey;
 
     public String getApiKey() {

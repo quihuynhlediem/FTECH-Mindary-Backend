@@ -1,6 +1,7 @@
 package com.mindary.aichat.services;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpEntity;
@@ -24,6 +25,7 @@ public class GeminiService {
 
     private final GeminiConfig geminiConfig;
     private final RestTemplate restTemplate;
+    private final EmbeddingService embeddingService;
     private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
     private static final String BASE_PROMPT = """
             You are a compassionate and professional mental health counselor. Your responses should be:
@@ -45,13 +47,27 @@ public class GeminiService {
             Remember: You're here to listen, support, and guide, not to replace professional medical advice.
             """;
 
-    public String generateResponse(String message, String chatHistory, String diaryInsight) {
+    public String generateResponse(String message, String conversationId, String diaryInsight) {
         try {
             StringBuilder promptBuilder = new StringBuilder(BASE_PROMPT);
 
-            if (chatHistory != null && !chatHistory.isEmpty()) {
-                promptBuilder.append("\nPrevious conversation context:\n")
-                        .append(chatHistory)
+            // Get context through EmbeddingService directly
+            if (conversationId != null && !conversationId.isEmpty()) {
+                List<String> similarMessages = embeddingService.findSimilarMessages(
+                        conversationId,
+                        message,
+                        5 // Get top 5 similar messages
+                );
+                if (!similarMessages.isEmpty()) {
+                    promptBuilder.append("\nRelevant context from previous conversations:\n")
+                            .append(String.join("\n\n", similarMessages))
+                            .append("\n");
+                }
+            }
+
+            if (diaryInsight != null && !diaryInsight.isEmpty()) {
+                promptBuilder.append("\nRelevant diary insight:\n")
+                        .append(diaryInsight)
                         .append("\n");
             }
 
@@ -62,6 +78,7 @@ public class GeminiService {
             promptBuilder.append("\n2. Offers supportive guidance");
             promptBuilder.append("\n3. Suggests practical coping strategies when appropriate");
             promptBuilder.append("\n4. Maintains a warm, professional tone");
+            promptBuilder.append("\n5. Don't be too long, keep it concise and focused");
 
             // Prepare headers
             HttpHeaders headers = new HttpHeaders();
@@ -81,6 +98,10 @@ public class GeminiService {
                     "topP", 0.95,
                     "maxOutputTokens", 1024
             ));
+            // a workaround to avoid a bug in the Gemini API, this means that the response will be generated in a synchronous way.
+            // temperature: 0.7 - 1.0: higher value means more randomness
+            // topK: 40 - 50: higher value means more randomness
+            // topP: 0.95 - 1.0: higher value means more randomness
 
             // Make request
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);

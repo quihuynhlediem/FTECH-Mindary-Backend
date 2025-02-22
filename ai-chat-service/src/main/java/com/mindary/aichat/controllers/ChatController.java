@@ -1,6 +1,5 @@
 package com.mindary.aichat.controllers;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,8 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mindary.aichat.dto.ChatRequest;
 import com.mindary.aichat.models.ChatMessage;
 import com.mindary.aichat.models.Conversation;
-import com.mindary.aichat.models.FollowUpAnalysis;
-import com.mindary.aichat.models.MessageType;
 import com.mindary.aichat.repositories.ChatMessageRepository;
 import com.mindary.aichat.services.ConversationService;
 import com.mindary.aichat.services.GeminiService;
@@ -42,9 +39,13 @@ public class ChatController {
 
     @PostMapping("/conversations")
     public ResponseEntity<Map<String, Object>> createConversation(@Valid @RequestBody ChatRequest chatRequest) {
+        // Generate AI response first
+        String aiResponse = geminiService.generateResponse(chatRequest.getMessage(), "", null);
+
         Conversation conversation = conversationService.createConversation(
                 chatRequest.getUserId(),
-                chatRequest.getMessage()
+                chatRequest.getMessage(),
+                aiResponse
         );
 
         List<ChatMessage> messages = conversationService.getConversationHistory(conversation.getId());
@@ -73,45 +74,19 @@ public class ChatController {
                 .limit(CHAT_HISTORY_LIMIT)
                 .toList();
 
-        StringBuilder historyBuilder = new StringBuilder();
-        if (!chatHistory.isEmpty()) {
-            for (ChatMessage msg : chatHistory) {
-                historyBuilder.append(msg.getType()).append(": ")
-                        .append(msg.getMessage()).append("\n");
-            }
-        }
-
         String response = geminiService.generateResponse(
                 chatRequest.getMessage(),
-                historyBuilder.toString(),
+                conversationId, // Pass conversationId instead of history string
                 null // diary insights will be added later
         );
 
-        // Analyze message for follow-up scheduling
-        analyzeAndScheduleFollowUp(conversationId, chatRequest.getMessage());
-
-        ChatMessage chatMessage = new ChatMessage();
-        chatMessage.setConversationId(conversationId);
-        chatMessage.setUserId(chatRequest.getUserId());
-        chatMessage.setMessage(chatRequest.getMessage());
-        chatMessage.setResponse(response);
-        chatMessage.setTimestamp(LocalDateTime.now());
-        chatMessage.setType(MessageType.USER);
-
-        return ResponseEntity.ok(chatMessageRepository.save(chatMessage));
-    }
-
-    private void analyzeAndScheduleFollowUp(String conversationId, String message) {
-        // Use Gemini to analyze if the message indicates a need for follow-up
-        FollowUpAnalysis analysis = geminiService.analyzeForFollowUp(message);
-        if (analysis.needsFollowUp()) {
-            Conversation conversation = conversationService.getConversation(conversationId);
-            conversationService.scheduleFollowUp(
-                    conversation,
-                    analysis.getFollowUpType(),
-                    LocalDateTime.now().plusHours(analysis.getFollowUpHours())
-            );
-        }
+        // Let ConversationService handle the message saving and analysis
+        return ResponseEntity.ok(conversationService.saveMessage(
+                conversationId,
+                chatRequest.getUserId(),
+                chatRequest.getMessage(),
+                response
+        ));
     }
 
     @GetMapping("/conversations/{conversationId}")

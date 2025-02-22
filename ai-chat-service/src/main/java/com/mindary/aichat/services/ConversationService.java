@@ -6,14 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.mindary.aichat.models.ChatMessage;
 import com.mindary.aichat.models.Conversation;
 import com.mindary.aichat.models.ConversationStatus;
 import com.mindary.aichat.models.FollowUpAnalysis;
-import com.mindary.aichat.models.FollowUpType;
 import com.mindary.aichat.models.MessageType;
 import com.mindary.aichat.repositories.ChatMessageRepository;
 import com.mindary.aichat.repositories.ConversationRepository;
@@ -28,16 +26,14 @@ public class ConversationService {
 
     private final ConversationRepository conversationRepository;
     private final ChatMessageRepository chatMessageRepository;
+    private final EmbeddingService embeddingService;
     private final GeminiService geminiService;
 
-    public Conversation createConversation(UUID userId, String initialMessage) {
-        // Generate AI response to initial message
-        String response = geminiService.generateResponse(initialMessage, "", null);
-
+    public Conversation createConversation(UUID userId, String initialMessage, String aiResponse) {
         // create and save conversation
         Conversation conversation = new Conversation();
         conversation.setUserId(userId);
-        conversation.setTitle(generateTitle(initialMessage));
+        conversation.setTitle(geminiService.generateConversationTitle(initialMessage));
         conversation.setCreatedAt(LocalDateTime.now());
         conversation.setLastMessageAt(LocalDateTime.now());
         conversation.setLastMessage(initialMessage);
@@ -50,9 +46,16 @@ public class ConversationService {
         chatMessage.setUserId(userId);
         chatMessage.setType(MessageType.USER);
         chatMessage.setMessage(initialMessage);
-        chatMessage.setResponse(response);
+        chatMessage.setResponse(aiResponse);
         chatMessage.setTimestamp(LocalDateTime.now());
-        chatMessageRepository.save(chatMessage);
+        ChatMessage savedMessage = chatMessageRepository.save(chatMessage);
+
+        // Create embedding for the message
+        embeddingService.createEmbedding(
+                savedMessage.getId(),
+                conversation.getId(),
+                initialMessage + "\n" + aiResponse
+        );
 
         // analyze for potential follow-up
         analyzeAndScheduleFollowUp(conversation.getId(), initialMessage);
@@ -63,67 +66,18 @@ public class ConversationService {
     private void analyzeAndScheduleFollowUp(String conversationId, String message) {
         FollowUpAnalysis analysis = geminiService.analyzeForFollowUp(message);
         if (analysis.isNeedsFollowUp()) {
-            Conversation conversation = getConversation(conversationId);
-            scheduleFollowUp(
-                    conversation,
-                    analysis.getFollowUpType(),
-                    LocalDateTime.now().plusHours(analysis.getFollowUpHours())
-            );
+            Conversation conversation = conversationRepository.findById(conversationId).orElse(null);
+            if (conversation != null) {
+                conversation.setFollowUpType(analysis.getFollowUpType());
+                conversation.setFollowUpDue(LocalDateTime.now().plusHours(analysis.getFollowUpHours()));
+                conversation.setFollowedUp(false);
+                conversationRepository.save(conversation);
+            }
         }
     }
 
     public List<ChatMessage> getConversationHistory(String conversationId) {
         return chatMessageRepository.findByConversationIdOrderByTimestampAsc(conversationId);
-    }
-
-    private String generateTitle(String message) {
-        // generate title with my man Gemini
-        return geminiService.generateConversationTitle(message);
-    }
-
-    // Scheduled task to check for follow-ups (cai nay act as a truly therapists)
-    @Scheduled(cron = "0 0 */1 * * *") // Run every hour for dev v1
-    public void checkAndSendFollowUps() {
-        LocalDateTime now = LocalDateTime.now();
-        List<Conversation> conversationsNeedingFollowUp = conversationRepository
-                .findByFollowUpDueLessThanAndIsFollowedUpFalse(now);
-
-        for (Conversation conversation : conversationsNeedingFollowUp) {
-            sendFollowUpMessage(conversation);
-            conversation.setFollowedUp(true);
-            conversationRepository.save(conversation);
-        }
-    }
-
-    private void sendFollowUpMessage(Conversation conversation) {
-        String followUpMessage = generateFollowUpMessage(conversation);
-        ChatMessage message = new ChatMessage();
-        message.setConversationId(conversation.getId());
-        message.setUserId(conversation.getUserId());
-        message.setMessage(followUpMessage);
-        message.setTimestamp(LocalDateTime.now());
-        message.setType(MessageType.AI);
-        chatMessageRepository.save(message);
-    }
-
-    private String generateFollowUpMessage(Conversation conversation) {
-        switch (conversation.getFollowUpType()) {
-            case HEALTH_CHECK:
-                return "Hello! I've been thinking about you. Last time we spoke, you mentioned feeling unwell. How are you feeling today?";
-            case ANXIETY_CHECK:
-                return "Hi there! I remember you shared about experiencing anxiety. I wanted to check in - how are you managing today?";
-            case SLEEP_CHECK:
-                return "Good morning! Last time we talked, you mentioned having trouble sleeping. How did you sleep last night?";
-            default:
-                return "Hello! I wanted to check in and see how you're doing today.";
-        }
-    }
-
-    public void scheduleFollowUp(Conversation conversation, FollowUpType type, LocalDateTime followUpTime) {
-        conversation.setFollowUpType(type);
-        conversation.setFollowUpDue(followUpTime);
-        conversation.setFollowedUp(false);
-        conversationRepository.save(conversation);
     }
 
     public List<Conversation> getUserConversations(UUID userId) {
@@ -190,5 +144,34 @@ public class ConversationService {
 
             return summary;
         }).toList();
+    }
+
+    public ChatMessage saveMessage(String conversationId, UUID userId, String message, String response) {
+        ChatMessage chatMessage = new ChatMessage();
+        chatMessage.setConversationId(conversationId);
+        chatMessage.setUserId(userId);
+        chatMessage.setType(MessageType.USER);
+        chatMessage.setMessage(message);
+        chatMessage.setResponse(response);
+        chatMessage.setTimestamp(LocalDateTime.now());
+        ChatMessage savedMessage = chatMessageRepository.save(chatMessage);
+
+        // Create embedding for the message
+        embeddingService.createEmbedding(
+                savedMessage.getId(),
+                conversationId,
+                message + "\n" + response
+        );
+
+        return savedMessage;
+    }
+
+    public String getRelevantContext(String conversationId, String currentMessage) {
+        List<String> similarMessages = embeddingService.findSimilarMessages(
+                conversationId,
+                currentMessage,
+                5
+        );
+        return String.join("\n\n", similarMessages);
     }
 }
