@@ -18,7 +18,10 @@ public class IdentityService {
     IdentityClient identityClient;
 
     public Mono<ResponseEntity<VerifyTokenResponse>> verifyToken(String token) {
-        return identityClient.verifyToken(VerifyTokenRequest.builder()
-                .token(token).build());
+        return identityClient.verifyToken(
+                VerifyTokenRequest.builder()
+                .token(token)
+                .build()
+        );
     }
 }

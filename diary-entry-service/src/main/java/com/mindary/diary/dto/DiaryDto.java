@@ -1,5 +1,6 @@
 package com.mindary.diary.dto;
 
+import com.mindary.diary.models.DiaryImage;
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,6 +14,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.UUID;
 
 @Data
@@ -25,6 +27,8 @@ public class DiaryDto {
     private String content;
 
     private UUID userId;
+
+    private Set<DiaryImageDto> images;
 
     private LocalDateTime createdAt;
 

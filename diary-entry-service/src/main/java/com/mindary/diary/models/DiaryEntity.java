@@ -10,6 +10,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -32,6 +35,14 @@ public class DiaryEntity {
     @Column(name = "user_id")
     private UUID userId;
 
+    @OneToMany(
+            mappedBy = "diary",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private Set<DiaryImage> images;
+
     @CreationTimestamp
     @Column(name = "createdAt", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -39,4 +50,11 @@ public class DiaryEntity {
     @UpdateTimestamp
     @Column(name = "updatedAt", nullable = false)
     private LocalDateTime updatedAt;
+
+    public void addImage(DiaryImage image) {
+        if (images == null) {
+            images = new HashSet<>();
+        }
+        images.add(image);
+    }
 }
