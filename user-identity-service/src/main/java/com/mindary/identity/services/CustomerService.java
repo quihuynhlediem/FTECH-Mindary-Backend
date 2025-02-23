@@ -1,5 +1,6 @@
 package com.mindary.identity.services;
 
+import com.mindary.identity.dto.CustomerDto;
 import com.mindary.identity.models.CustomerEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,5 +19,9 @@ public interface CustomerService {
 
     void delete(UUID id);
 
-    CustomerEntity partialUpdate(UUID id, CustomerEntity hostEntity);
+    CustomerEntity partialUpdate(UUID id, CustomerDto customerDto);
+
+    Optional<CustomerEntity> findByEmail(String email);
+
+    void resetPassword(CustomerEntity customerEntity, String newPassword);
 }

@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -38,15 +39,15 @@ public class CustomFilter extends OncePerRequestFilter {
                 String userId = claims.get("userId", String.class);
                 String role = claims.get("role", String.class);
 
-                log.info("User {} has role {}", userId, role);
-
                 if (userId != null && role != null) {
                     List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
                     SystemUserDetails userDetails = new SystemUserDetails(UUID.fromString(userId), role);
+
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                             userDetails, null, authorities);
-
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+                    securityContext.setAuthentication(authentication);
+                    SecurityContextHolder.setContext(securityContext);
                 }
             }
         } catch (Exception e) {

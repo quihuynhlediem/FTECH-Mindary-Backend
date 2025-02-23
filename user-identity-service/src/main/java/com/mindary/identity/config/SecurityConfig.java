@@ -9,7 +9,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
@@ -18,6 +20,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(AuthenticationService authenticationService) {
@@ -40,7 +44,9 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/signup").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/verify-token").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/identity-service/v3/api-docs").permitAll()
-//                                .requestMatchers("/api/v1/customers/**").authenticated()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/customers/forgot-password").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/customers/validate-otp").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/customers/new-password").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
