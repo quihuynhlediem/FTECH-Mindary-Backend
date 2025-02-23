@@ -2,28 +2,51 @@ import MeditationService from '../services/meditationService.js';
 
 const createMeditation = async (req, res) => {
     try {
-        const meditation = await MeditationService.createMeditation(req.body.title, req.body.content);
-        res.status(201).json(meditation);
+        const { title, content } = req.body;
+
+        if (!title || !content) {
+            return res.status(400).json({ message: 'Title and content are required.' });
+        }
+
+        const meditation = await MeditationService.createMeditation(title, content);
+        return res.status(201).json(meditation);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ message: error.message });
+        }
+
+        console.error('Error creating meditation:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
     }
 };
 
-const createMulipleMeditations = async (req, res) => {
+const createMultipleMeditations = async (req, res) => {
     try {
-        const meditations = await MeditationService.createMulipleMeditations(req.body);
-        res.status(201).json(meditations);
+        const meditationsData = req.body;
+
+        if (!Array.isArray(meditationsData) || meditationsData.length === 0) {
+            return res.status(400).json({ message: 'Request body must be a non-empty array of meditations.' });
+        }
+
+        const meditations = await MeditationService.createMultipleMeditations(meditationsData);
+        return res.status(201).json(meditations);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ message: error.message });
+        }
+
+        console.error('Error creating multiple meditations:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
     }
 };
 
 const getAllMeditations = async (req, res) => {
     try {
         const meditations = await MeditationService.getAllMeditations();
-        res.json(meditations);
+        return res.status(200).json(meditations);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Error fetching meditations:', error);
+        return res.status(500).json({ message: 'An unexpected error occurred while fetching meditations.' });
     }
 };
 
@@ -31,52 +54,68 @@ const getMeditationById = async (req, res) => {
     try {
         const meditation = await MeditationService.getMeditationById(req.params.id);
         if (!meditation) {
-            res.status(404).json({ message: 'Meditation not found' });
-            return;
+            return res.status(404).json({ message: 'Meditation not found' });
         }
-        res.json(meditation);
+        return res.status(200).json(meditation);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Error fetching meditation by ID:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
     }
 };
 
 const getRecommendedMeditation = async (req, res) => {
     try {
-        const meditation = await MeditationService.getRecommendedMeditation(req.body);
-        res.json(meditation);
+        const recommendedMeditation = await MeditationService.getRecommendedMeditation(req.body);
+        
+        if (!recommendedMeditation) {
+            return res.status(404).json({ message: 'Recommended meditation not found' });
+        }
+        
+        return res.status(200).json(recommendedMeditation);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Error fetching recommended meditation:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
     }
 };
 
 const updateMeditation = async (req, res) => {
     try {
-        const meditation = await MeditationService.updateMeditation(req.params.id, req.body.title, req.body.content);
-        if (!meditation) {
-            res.status(404).json({ message: 'Meditation not found' });
-            return;
+        const { title, content } = req.body;
+        
+        if (!title || !content) {
+            return res.status(400).json({ message: 'Title and content are required.' });
         }
-        res.json(meditation);
+        
+        const updatedMeditation = await MeditationService.updateMeditation(req.params.id, title, content);
+        
+        // if (!updatedMeditation) {
+        //     return res.status(404).json({ message: 'Meditation not found' });
+        // }
+        
+        return res.status(200).json(updatedMeditation);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Error updating meditation:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
     }
 };
 
 const deleteMeditation = async (req, res) => {
     try {
         await MeditationService.deleteMeditation(req.params.id);
-        res.status(204).send(); 
+        return res.status(204).send();
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Error deleting meditation:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
     }
 };
 
-export default { 
-    createMeditation, 
-    createMulipleMeditations, 
-    getAllMeditations, 
-    getMeditationById, 
-    updateMeditation, 
+
+export default {
+    createMeditation,
+    createMultipleMeditations,
+    getAllMeditations,
+    getMeditationById,
+    updateMeditation,
     deleteMeditation,
-    getRecommendedMeditation 
+    getRecommendedMeditation
 };
