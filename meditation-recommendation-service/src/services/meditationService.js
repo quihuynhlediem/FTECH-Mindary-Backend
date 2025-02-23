@@ -7,71 +7,157 @@ import { buildSearchPrompt } from '../utils/prompt.js';
 
 
 const createMeditation = async (title, content) => {
-    const meditationId = uuidv4();
+    try {
+        const meditationId = uuidv4();
 
-    await vectorStore.addDocuments(
-        [{ 
-            pageContent: content, 
-            metadata: { title } }],
-        { 
-            ids: [meditationId] 
-        }
-    );
-    return { success: true, message: "Meditation stored successfully!", id: meditationId };
+        await vectorStore.addDocuments(
+            [{
+                pageContent: content,
+                metadata: { title }
+            }],
+            {
+                ids: [meditationId]
+            }
+        );
+
+        return { success: true, message: "Meditation has been created successfully!", id: meditationId };
+    } catch (error) {
+        console.error("Error creating meditation:", error);
+        return { success: false, message: "An error occurred while creating the meditation. Please try again later." };
+    }
 };
 
-const createMulipleMeditations = async (meditationsData) => {
-    //return await Meditation.insertMany(meditationsData);
-    const meditationsWithIds = meditationsData.map(
-        meditation => ({
-        ...meditation,
-        meditationId: uuidv4() 
-    }));
+// const createMultipleMeditations = async (meditationsData) => {
+//     //return await Meditation.insertMany(meditationsData);
+//     const meditationsWithIds = meditationsData.map(
+//         meditation => ({
+//         ...meditation,
+//         meditationId: uuidv4() 
+//     }));
 
-    const documents = meditationsData.map(
-        (meditation, index) => ({
-        pageContent: meditation.content, 
-        metadata: { 
-            title: meditation.title,
-        }
-    }));
+//     const documents = meditationsData.map(
+//         (meditation, index) => ({
+//         pageContent: meditation.content, 
+//         metadata: { 
+//             title: meditation.title,
+//         }
+//     }));
 
-    await vectorStore.addDocuments(
-        documents,
-        { 
+//     await vectorStore.addDocuments(
+//         documents,
+//         { 
+//             ids: meditationsWithIds.map(m => m.meditationId) 
+//         }
+//     );
+// };
+
+const createMultipleMeditations = async (meditationsData) => {
+    try {
+        // Generate a unique ID for each meditation
+        const meditationsWithIds = meditationsData.map(meditation => ({
+            ...meditation,
+            meditationId: uuidv4() 
+        }));
+
+        // Prepare documents for vectorStore insertion
+        const documents = meditationsData.map(meditation => ({
+            pageContent: meditation.content, 
+            metadata: { title: meditation.title }
+        }));
+
+        // Add the documents to vectorStore using the generated IDs
+        await vectorStore.addDocuments(
+            documents,
+            { ids: meditationsWithIds.map(m => m.meditationId) }
+        );
+
+        return { 
+            success: true, 
+            message: "Multiple meditations have been created successfully.", 
             ids: meditationsWithIds.map(m => m.meditationId) 
-        }
-    );
+        };
+    } catch (error) {
+        console.error("Error creating multiple meditations:", error);
+        return { 
+            success: false, 
+            message: "An error occurred while creating multiple meditations. Please try again later." 
+        };
+    }
 };
+
 
 const getAllMeditations = async () => {
-    return await Meditation.find();
+    try {
+        const meditations = await Meditation.find();
+        return {
+            success: true,
+            message: "All meditations retrieved successfully.",
+            data: meditations
+        };
+    } catch (error) {
+        console.error("Error retrieving meditations:", error);
+        return {
+            success: false,
+            message: "An error occurred while retrieving meditations.",
+            data: null
+        };
+    }
 };
 
 const getMeditationById = async (meditationId) => {
-    return await Meditation.findById(meditationId);
+    try {
+        const meditation = await Meditation.findById(meditationId);
+        if (!meditation) {
+            return {
+                success: false,
+                message: "Meditation not found.",
+                data: null
+            };
+        }
+        return {
+            success: true,
+            message: "Meditation retrieved successfully.",
+            data: meditation
+        };
+    } catch (error) {
+        console.error("Error retrieving meditation by ID:", error);
+        return {
+            success: false,
+            message: "An error occurred while retrieving the meditation.",
+            data: null
+        };
+    }
 };
 
 const getRecommendedMeditation = async (diaryAnalysis) => {
     try {
-        if (!diaryAnalysis) {
-            throw new Error("Missing diaryAnalysis in the request body.");
-        }      
-        const prompt = buildSearchPrompt({diaryAnalysis});
+        const prompt = buildSearchPrompt({ diaryAnalysis });
+
         const retrievedMeditations = await vectorStore.similaritySearch(prompt, 2);
-        console.log(retrievedMeditations);
-        const meditationsContent = retrievedMeditations.map(doc => doc.pageContent).join("\n\n");
-        console.log(meditationsContent);
+        if (!retrievedMeditations || retrievedMeditations.length === 0) {
+            throw new Error("No meditations found matching the criteria.");
+        }
+        console.log("Retrieved meditations:", retrievedMeditations);
+
+        const meditationsContent = retrievedMeditations
+            .map(doc => doc.pageContent);
+        if (!meditationsContent) {
+            throw new Error("Retrieved meditations contain no content.");
+        }
+        console.log("Meditations content:", meditationsContent);
+
         const messages = await llmModelConfig.prompt.invoke({
             question: prompt,
             context: meditationsContent,
-          });
+        });
+
         const answer = await llmModelConfig.llm.invoke(messages);
-        console.log(answer);
-        return answer;
+        console.log("LLM answer:", answer.content);
+
+        return answer.toJSON().kwargs.content;
     } catch (error) {
-        console.error("❌ Error retrieving meditation:", error);
-        return { success: false, message: "Failed to retrieve meditation." };
+        console.error("Error retrieving meditation:", error);
+        return { success: false, message: `Failed to retrieve meditation.` };
     }
 };
 
@@ -81,10 +167,7 @@ const updateMeditation = async (meditationId, newTitle, newContent) => {
             pageContent: newContent,
             metadata: { title: newTitle },
         });
-        await vectorStore.addDocuments(
-            [doc], 
-            { ids: [meditationId] } 
-        );
+        await vectorStore.addDocuments([doc], { ids: [meditationId] });
 
         return { success: true, message: "Meditation updated successfully!" };
     } catch (error) {
@@ -93,13 +176,24 @@ const updateMeditation = async (meditationId, newTitle, newContent) => {
     }
 };
 
+// const deleteMeditation = async (meditationId) => {
+//     return await vectorStore.delete({ ids: [meditationId] });
+// };
+
 const deleteMeditation = async (meditationId) => {
-    return await vectorStore.delete({ ids: [meditationId] });
+    try {
+        await vectorStore.delete({ ids: [meditationId] });
+        console.log('Deleted meditation');
+        return;
+    } catch (error) {
+        console.error('Error deleting meditation:', error);
+        throw new Error('Failed to delete meditation');
+    }
 };
 
 export default { 
     createMeditation, 
-    createMulipleMeditations, 
+    createMultipleMeditations, 
     getAllMeditations, 
     getMeditationById, 
     updateMeditation, 

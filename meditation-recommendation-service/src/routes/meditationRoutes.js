@@ -4,7 +4,7 @@ import MeditationController from '../controllers/meditationController.js';
 const router = express.Router();
 
 router.post('/create', MeditationController.createMeditation);
-router.post('/create/multiple', MeditationController.createMulipleMeditations);
+router.post('/create/multiple', MeditationController.createMultipleMeditations);
 
 router.get('/get/all', MeditationController.getAllMeditations);
 router.get('/get/:id', MeditationController.getMeditationById);
