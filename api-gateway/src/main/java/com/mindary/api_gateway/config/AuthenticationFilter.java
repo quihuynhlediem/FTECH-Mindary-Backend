@@ -41,6 +41,8 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             "/api/v1/auth/verify-token",
             "/identity-service/v3/api-docs",
             "/diary-entry-service/v3/api-docs",
+            "/meditation-recommendation-service",
+            "/ai-chat-service/v3/api-docs",
             "/api/v1/customers/forgot-password",
             "/api/v1/customers/validate-otp",
             "/api/v1/customers/new-password",

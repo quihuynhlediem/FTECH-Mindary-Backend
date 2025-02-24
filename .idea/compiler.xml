@@ -17,6 +17,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="api-gateway" />
+        <module name="ai-chat" />
       </profile>
       <profile name="Annotation profile for diary-entry" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -31,6 +32,7 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="ai-chat" options="-parameters" />
       <module name="api-gateway" options="-parameters" />
       <module name="identity" options="-parameters" />
       <module name="project" options="-parameters" />
