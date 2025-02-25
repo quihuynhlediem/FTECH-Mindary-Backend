@@ -1,16 +1,19 @@
-D:\RMIT\PROJECTS\MINDARY\[2025] Tech Doc\CodeBase\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\config\GeminiConfig.java
-D:\RMIT\PROJECTS\MINDARY\[2025] Tech Doc\CodeBase\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\dto\ChatRequest.java
-D:\RMIT\PROJECTS\MINDARY\[2025] Tech Doc\CodeBase\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\models\MessageType.java
-D:\RMIT\PROJECTS\MINDARY\[2025] Tech Doc\CodeBase\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\models\ConversationStatus.java
-D:\RMIT\PROJECTS\MINDARY\[2025] Tech Doc\CodeBase\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\dto\ChatResponse.java
-D:\RMIT\PROJECTS\MINDARY\[2025] Tech Doc\CodeBase\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\repositories\ChatMessageRepository.java
-D:\RMIT\PROJECTS\MINDARY\[2025] Tech Doc\CodeBase\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\repositories\ConversationRepository.java
-D:\RMIT\PROJECTS\MINDARY\[2025] Tech Doc\CodeBase\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\AIChatApplication.java
-D:\RMIT\PROJECTS\MINDARY\[2025] Tech Doc\CodeBase\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\models\FollowUpAnalysis.java
-D:\RMIT\PROJECTS\MINDARY\[2025] Tech Doc\CodeBase\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\controllers\ChatController.java
-D:\RMIT\PROJECTS\MINDARY\[2025] Tech Doc\CodeBase\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\services\ConversationService.java
-D:\RMIT\PROJECTS\MINDARY\[2025] Tech Doc\CodeBase\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\models\ChatMessage.java
-D:\RMIT\PROJECTS\MINDARY\[2025] Tech Doc\CodeBase\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\config\WebConfig.java
-D:\RMIT\PROJECTS\MINDARY\[2025] Tech Doc\CodeBase\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\models\FollowUpType.java
-D:\RMIT\PROJECTS\MINDARY\[2025] Tech Doc\CodeBase\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\services\GeminiService.java
-D:\RMIT\PROJECTS\MINDARY\[2025] Tech Doc\CodeBase\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\models\Conversation.java
+C:\Users\ADMIN\Documents\Project\MINDARY\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\models\FollowUpAnalysis.java
+C:\Users\ADMIN\Documents\Project\MINDARY\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\services\ConversationService.java
+C:\Users\ADMIN\Documents\Project\MINDARY\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\models\FollowUpType.java
+C:\Users\ADMIN\Documents\Project\MINDARY\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\config\WebConfig.java
+C:\Users\ADMIN\Documents\Project\MINDARY\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\models\ConversationStatus.java
+C:\Users\ADMIN\Documents\Project\MINDARY\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\repositories\ConversationRepository.java
+C:\Users\ADMIN\Documents\Project\MINDARY\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\config\GeminiConfig.java
+C:\Users\ADMIN\Documents\Project\MINDARY\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\models\Conversation.java
+C:\Users\ADMIN\Documents\Project\MINDARY\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\dto\ChatRequest.java
+C:\Users\ADMIN\Documents\Project\MINDARY\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\models\ChatMessage.java
+C:\Users\ADMIN\Documents\Project\MINDARY\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\services\EmbeddingService.java
+C:\Users\ADMIN\Documents\Project\MINDARY\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\models\EmbeddedMessage.java
+C:\Users\ADMIN\Documents\Project\MINDARY\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\controllers\ChatController.java
+C:\Users\ADMIN\Documents\Project\MINDARY\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\repositories\EmbeddedMessageRepository.java
+C:\Users\ADMIN\Documents\Project\MINDARY\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\services\GeminiService.java
+C:\Users\ADMIN\Documents\Project\MINDARY\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\models\MessageType.java
+C:\Users\ADMIN\Documents\Project\MINDARY\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\AIChatApplication.java
+C:\Users\ADMIN\Documents\Project\MINDARY\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\dto\ChatResponse.java
+C:\Users\ADMIN\Documents\Project\MINDARY\Mindary-Backend\ai-chat-service\src\main\java\com\mindary\aichat\repositories\ChatMessageRepository.java
