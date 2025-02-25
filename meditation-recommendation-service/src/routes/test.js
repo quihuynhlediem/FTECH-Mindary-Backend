@@ -1,8 +1,3 @@
-import express from 'express';
-import MeditationController from '../controllers/meditationController.js';
-
-const router = express.Router();
-
 /**
  * @openapi
  * /meditation/create:
@@ -43,15 +38,3 @@ const router = express.Router();
  *       500:
  *         description: Internal server error.
  */
-router.post('/create', MeditationController.createMeditation);
-router.post('/create/multiple', MeditationController.createMultipleMeditations);
-
-router.get('/get/all', MeditationController.getAllMeditations);
-router.get('/get/:id', MeditationController.getMeditationById);
-router.post('/get/recommended', MeditationController.getRecommendedMeditation);
-
-router.delete('/delete/:id', MeditationController.deleteMeditation);
-
-router.put('/update/:id', MeditationController.updateMeditation);
-
-export default router;
