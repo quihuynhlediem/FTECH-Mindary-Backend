@@ -133,7 +133,7 @@ const getRecommendedMeditation = async (diaryAnalysis) => {
     try {
         const prompt = buildSearchPrompt({ diaryAnalysis });
 
-        const retrievedMeditations = await vectorStore.similaritySearch(prompt, 2);
+        const retrievedMeditations = await vectorStore.similaritySearch(prompt, 10);
         if (!retrievedMeditations || retrievedMeditations.length === 0) {
             throw new Error("No meditations found matching the criteria.");
         }

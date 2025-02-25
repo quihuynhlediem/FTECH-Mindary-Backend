@@ -23,7 +23,7 @@ const llm = new ChatGoogleGenerativeAI({
 	],
 });
 
-const embeddings = new GoogleGenerativeAIEmbeddings({
+const embeddings = new GoogleGenerativeAIEmbeddings({	
     modelName: "text-embedding-004",
     apiKey: config.GEMINI_API_KEY,
     taskType: TaskType.RETRIEVAL_DOCUMENT,  // TaskType.SEMANTIC_SIMILARITY??
