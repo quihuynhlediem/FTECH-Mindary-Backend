@@ -20,6 +20,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,16 +36,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
-
     private final CustomerService customerService;
     private final PasswordEncoder passwordEncoder;
 
     @Value(value = "${jwt.secret:application.properties}")
     private String secretKey;
 
+    @Value(value = "${otp.characters:application.properties}")
+    private String otpCharacters;
+
+    @Value(value = "${otp.length:application.properties}")
+    private String otpLength;
+
     private final Long jwtExpiryMs = 86400000L;
     private final Long refreshTokenExpiryMs = 86400000L * 7;
 
+    private final SecureRandom secureRandom = new SecureRandom();
 
     @Override
     public UserDetails authenticate(String email, String password) {
@@ -145,12 +154,27 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return claimsResolver.apply(claims);
     }
 
-    private Claims extractAllClaims(String token) {
+    public Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    @Override
+    public String generateOTP() {
+        log.info("Generating OTP");
+        StringBuilder otp = new StringBuilder();
+        for (int i = 0; i < Integer.parseInt(otpLength); i++) {
+            otp.append(otpCharacters.charAt(secureRandom.nextInt(otpCharacters.length())));
+        }
+        return otp.toString();
+    }
+
+    @Override
+    public LocalDateTime generateExpiryDateTime() {
+        return LocalDateTime.now().plusMinutes(10);
     }
 
     private String extractUsername(String token) {

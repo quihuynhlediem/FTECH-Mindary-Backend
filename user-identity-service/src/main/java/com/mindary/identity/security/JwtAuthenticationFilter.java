@@ -1,6 +1,7 @@
 package com.mindary.identity.security;
 
 import com.mindary.identity.services.AuthenticationService;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,8 +31,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String token = extractTokenFromRequest(request);
             if (token != null) {
-                UserDetails userDetails = authenticationService.validateToken(token);
+                SystemUserDetails userDetails = (SystemUserDetails) authenticationService.validateToken(token);
 
+//                SystemUserDetails userDetails1 = new SystemUserDetails(userDetails.getId(), userDetails.getAuthorities());
                 // Avoid race conditions across multiple threads
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails,

@@ -20,6 +20,14 @@ public class GatewayConfig {
                 .route("diary-entry-route", r -> r
                         .path("/api/v1/diaries/**")
                         .uri("http://localhost:8082"))
+                .route("ai-chat-service-route", r -> r
+                        .path("/api/v1/chat/**")
+                        .uri("http://localhost:8083")
+                )
+                .route("meditation-recommendation-service-route", r -> r
+                        .path("api/v1/meditations")
+                        .uri("http://localhost:8084")
+                )
                 .build();
     }
 }
