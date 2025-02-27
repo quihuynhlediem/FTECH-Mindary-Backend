@@ -4,6 +4,7 @@ import { llmModel } from "../lib/modelConfiguration"
 import { z, ZodVoid } from "zod";
 import sharp from 'sharp';
 import { uploadToS3 } from '../lib/awsConfiguration';
+import Diary from '../models/Diary';
 
 const emotionAnalyzePrompt = ChatPromptTemplate.fromTemplate(
     "You are a helpful and enthusiastic psychological therapist. You can analyze the following personal diary entry carefully.\
@@ -18,9 +19,9 @@ const emotionAnalyzePrompt = ChatPromptTemplate.fromTemplate(
 );
 
 const emotionAnalyzeSchema = z.object({
-    emotionLevel: z.string().describe("Emotion Level"),
-    category: z.array(z.string().describe("Emotion category")),
-    summary: z.string().describe("Diary summarization"),
+    emotionLevel: z.string().describe("You analyze the following personal diary entry carefully. Rate the mood on a scale from 1 to 5, where 1 is extremely negative and 5 is extremely positive. Additionally, classify the mood into categories (e.g., happy, sad, anxious, calm, etc.). Not only detect emotions, but also consider how the user talks about their day—are they using soft language, or are they clearly in distress? For example, if the user says, “I’m feeling overwhelmed” or “I can’t catch a break,” this indicates a deeper emotional struggle."),
+    category: z.array(z.string().describe("Classify the mood into categories (e.g., happy, sad, anxious, calm, etc.).")),
+    summary: z.string().describe("Gently compare today’s emotions with previous days. If the user has been improving, offer encouraging words like, “You’ve had a tough few days, but it seems like you’re making progress!” If things are getting harder, say, “It looks like things have been rough lately. It’s okay to have those days, and I’m here with you. Create a summary that feels empathetic, validating the user’s feelings. Avoid robotic phrasing—focus on making them feel understood and supported."),
 });
 
 const emotionAnalyzeOutput = llmModel.withStructuredOutput(emotionAnalyzeSchema, {
@@ -43,8 +44,8 @@ const correlationAnalyzePrompt = ChatPromptTemplate.fromTemplate(
 
 const correlationAnalyzeSchema = z.object({
     correlations: z.array(z.object({
-        name: z.string().describe("The name of the specific factor with label about long-term or short-term factor"),
-        description: z.string().describe("Provide the details explanation for the corresponding correlation factor, show the user that you care about their well-being and give them some appropriate advice"),
+        name: z.string().describe("List of factor with short-term or long-term labels"),
+        description: z.string().describe("Include the compassionate insights for the correlation factor"),
     }))
 });
 
@@ -55,16 +56,13 @@ const correlationAnalyzeOutput = llmModel.withStructuredOutput(correlationAnalyz
 const correlationChain = correlationAnalyzePrompt.pipe(correlationAnalyzeOutput);
 
 const mentalHealthAnalyzePrompt = ChatPromptTemplate.fromTemplate(
-"You are a helpful and enthusiastic psychological therapist. As you read through the user’s journal entries, you should pay close attention to any signs or language that may indicate potential symptoms of mental health disorders (e.g., anxiety, depression, stress). For instance, phrases like: “I feel so exhausted” or “Nothing seems enjoyable anymore” could indicate mental health struggles.\
-Where applicable, assess the severity of risk (e.g., mild, moderate, or high) based on how frequently recurring or extreme patterns occur in the text:\
-If the user occasionally mentions feeling like “stressed” or “worried”, but these mentions are tied to specific events (for example: “I felt overwhelmed with my study today, but I think it’ll be better tomorrow”). This suggests situational stress without a long-lasting pattern, indicating mild severity.\
-If the user frequently notes feeling “exhausted” or “down” even during typical activities, for example: “Even with a full night’s sleep, I feel drained every day.”.  The recurring pattern without situational triggers points to moderate stress.\
-If the user describes ongoing, intense feelings like: “hopelessness” or “emptiness” across multiple entries, for instance: “I dont see the point in anything lately, and it’s been like this for month.” This consistent and pervasive language suggests a high severity level, potentially indicating a need for further mental health support.\
-Don’t just look for symptom keywords—listen to how the user is describing their struggles. If they talk about exhaustion or sadness, consider how long these feelings have been with them, but approach it gently.\
-Step 1: Instead of flagging symptoms in a clinical way, use soft, comforting language. If you notice signs of burnout, say, “I’ve noticed you’ve been really tired lately, even when you’ve had enough sleep. It sounds like your body is asking for a bit of a break, and that’s okay.”\
-Step 2: Be mindful of how often these emotions are recurring, but express concern in a caring manner. For example, if sadness persists, say, “It seems like you’ve been feeling down for a little while now. It’s completely understandable to feel this way, but I just want to make sure you’re taking care of yourself.” or “It seems like you’ve been feeling more stressed recently, especially at the start of the week. This is entirely understandable given the challenges you’ve mentioned. Let’s make sure you’re finding small ways to decompress, even if it’s just a few minutes a day.”\
-Step 3: If the user shows signs of needing help, gently encourage them to reach out without sounding alarming. Say things like, “If you’re finding it hard to cope, talking to someone could really help lighten the load. I’m here for you too, and we can take it step by step.”\
-Step 4: Always offer kindness and support without pushing. Suggest self-care strategies, but also reassure the user that seeking help is okay if they need it. For instance: “Sometimes doing small things, like taking a walk or having quite time, can help a lot. And remember, reaching out is always an option if you need since you’re not alone.\
+"You are a helpful and enthusiastic psychological therapist. As you read through the user’s journal entries, you should detect any signs or language that may indicate potential symptoms of mental health disorders (e.g., anxiety, depression, stress). \
+			Where applicable, assess the severity of risk (e.g., mild, moderate, or high) based on recurring or extreme patterns in the text. \
+			Don’t just look for symptom keywords—listen to how the user is describing their struggles. If they talk about exhaustion or sadness, consider how long these feelings have been with them, but approach it gently. \
+			Step 1: Instead of flagging symptoms in a clinical way, use soft, comforting language. If you notice signs of burnout, say, “I’ve noticed you’ve been really tired lately, even when you’ve had enough sleep. It sounds like your body is asking for a bit of a break, and that’s okay.”\
+			Step 2: Be mindful of how often these emotions are recurring, but express concern in a caring manner. For example, if sadness persists, say, “It seems like you’ve been feeling down for a little while now. It’s completely understandable to feel this way, but I just want to make sure you’re taking care of yourself.”\
+			Step 3: If the user shows signs of needing help, gently encourage them to reach out without sounding alarming. Say things like, “If you’re finding it hard to cope, talking to someone could really help lighten the load. I’m here for you too, and we can take it step by step.”\
+			Step 4: Always offer kindness and support. Suggest self-care strategies, but also reassure the user that seeking help is okay if they need it. \
 User Diary:\
 {input}"
 )
@@ -72,7 +70,7 @@ User Diary:\
 const mentalHealthAnalyzeSchema = z.object({
     symptoms: z.array(
         z.object({
-            name: z.string().describe("Symptom name"),
+            name: z.string().describe("List of symptom name"),
             risk: z.string().describe("Include the severity level"),
             description: z
                 .string()
@@ -96,6 +94,8 @@ export const analyze = async (req: Request, res: Response) => {
         const input = await formData['diary']
         const uploadFile = req.file;
         const correlationAnalyzeResult = await correlationChain.invoke({ input });
+        const emotionAnalyzeResult = await emotionChain.invoke({ input });
+        const mentalHealthAnalyzeResult = await mentalHealthChain.invoke({ input });
         // console.log(input)
         let url;
         if (uploadFile) {
@@ -109,9 +109,42 @@ export const analyze = async (req: Request, res: Response) => {
 			url = await uploadToS3(fileBuffer, imageName, uploadFile.mimetype);
             console.log(url)
         }
-        // console.log(emotionAnalyzeResult)
+        
+        // Create a new Diary document
+        const newDiary = new Diary({
+            senderId: userId,
+            content: input,
+            emotionObjects: [
+                {
+                    emotionLevel: emotionAnalyzeResult.emotionLevel,
+                    emotionCategory: emotionAnalyzeResult.category,
+                    emotionSummary: emotionAnalyzeResult.summary,
+                },
+            ],
+            correlationObjects: correlationAnalyzeResult.correlations.map(correlation => ({
+                name: correlation.name,
+                description: correlation.description,
+            })),
+            symptomObjects: mentalHealthAnalyzeResult.symptoms.map(symptom => ({
+                name: symptom.name,
+                risk: symptom.risk,
+                description: symptom.description,
+                suggestions: symptom.suggestions,
+            })),
+            imageLink: [],
+            recommendations: [], // Assuming recommendations are empty
+        });
+
+        // Save the new Diary document to the database
+        await newDiary.save();
+
         res.status(200).json({
-            result: correlationAnalyzeResult
+            result:
+            {
+                emotion: emotionAnalyzeResult,
+                correlation: correlationAnalyzeResult,
+                mentalHealth: mentalHealthAnalyzeResult,
+            },
         });
         return;
     } catch (error) {
