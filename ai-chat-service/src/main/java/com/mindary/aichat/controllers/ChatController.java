@@ -35,7 +35,7 @@ public class ChatController {
     private final GeminiService geminiService;
     private final ConversationService conversationService;
     private final ChatMessageRepository chatMessageRepository;
-    private static final int CHAT_HISTORY_LIMIT = 7; // Limit to last 7 messages for development v1
+    private static final int CHAT_HISTORY_LIMIT = 5; // Limit to last 5 messages for development v1
 
     @PostMapping("/conversations")
     public ResponseEntity<Map<String, Object>> createConversation(@Valid @RequestBody ChatRequest chatRequest) {
