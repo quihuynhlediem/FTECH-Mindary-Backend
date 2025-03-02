@@ -36,17 +36,16 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 
     @NonFinal
     private final String[] publicEndpoints = {
-            "/api/v1/auth/login",
-            "/api/v1/auth/signup",
-            "/api/v1/auth/verify-token",
-            "/identity-service/v3/api-docs",
-            "/diary-entry-service/v3/api-docs",
-            "/meditation-recommendation-service",
-            "/ai-chat-service/v3/api-docs",
-            "/api/v1/customers/forgot-password",
-            "/api/v1/customers/validate-otp",
-            "/api/v1/customers/new-password",
-    };
+        "/api/v1/auth/login",
+        "/api/v1/auth/signup",
+        "/api/v1/auth/verify-token",
+        "/identity-service/v3/api-docs",
+        "/diary-entry-service/v3/api-docs",
+        "/meditation-recommendation-service",
+        "/ai-chat-service/v3/api-docs",
+        "/api/v1/customers/forgot-password",
+        "/api/v1/customers/validate-otp",
+        "/api/v1/customers/new-password",};
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
