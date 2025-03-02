@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mindary.aichat.dto.ChatRequest;
+import com.mindary.aichat.dto.UpdateTitleRequest;
 import com.mindary.aichat.models.ChatMessage;
 import com.mindary.aichat.models.Conversation;
 import com.mindary.aichat.repositories.ChatMessageRepository;
@@ -43,7 +44,7 @@ public class ChatController {
         String aiResponse = geminiService.generateResponse(chatRequest.getMessage(), "", null);
 
         Conversation conversation = conversationService.createConversation(
-                chatRequest.getUserId(),
+                UUID.fromString(chatRequest.getUserId()),
                 chatRequest.getMessage(),
                 aiResponse
         );
@@ -83,7 +84,7 @@ public class ChatController {
         // Let ConversationService handle the message saving and analysis
         return ResponseEntity.ok(conversationService.saveMessage(
                 conversationId,
-                chatRequest.getUserId(),
+                UUID.fromString(chatRequest.getUserId()),
                 chatRequest.getMessage(),
                 response
         ));
@@ -135,5 +136,20 @@ public class ChatController {
             @PathVariable String messageId) {
         conversationService.deleteMessage(conversationId, messageId);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/conversations/{conversationId}/title")
+    public ResponseEntity<?> updateConversationTitle(
+            @PathVariable String conversationId,
+            @Valid @RequestBody UpdateTitleRequest request) {
+        try {
+            Conversation updatedConversation = conversationService.updateConversationTitle(conversationId, request.getTitle());
+            return ResponseEntity.ok(updatedConversation);
+        } catch (Exception e) {
+            log.error("Error updating conversation title for id {}: {}", conversationId, e.getMessage(), e);
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "Failed to update conversation title: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
     }
 }

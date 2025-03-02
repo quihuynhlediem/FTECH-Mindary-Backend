@@ -15,16 +15,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
+
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             CustomFilter customFilter
     ) throws Exception {
         http
-                .authorizeHttpRequests(auth ->
-                        auth
-                                .requestMatchers(HttpMethod.GET, "/ai-chat-service/v3/api-docs").permitAll()
-                                .anyRequest().authenticated()
+                .authorizeHttpRequests(auth
+                        -> auth
+                        .requestMatchers(HttpMethod.GET, "/ai-chat-service/v3/api-docs").permitAll()
+                        .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(

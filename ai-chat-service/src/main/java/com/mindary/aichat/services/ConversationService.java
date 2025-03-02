@@ -174,4 +174,17 @@ public class ConversationService {
         );
         return String.join("\n\n", similarMessages);
     }
+
+    public Conversation updateConversationTitle(String conversationId, String newTitle) {
+        try {
+            log.info("Updating title for conversation: {}", conversationId);
+            Conversation conversation = conversationRepository.findById(conversationId)
+                    .orElseThrow(() -> new RuntimeException("Conversation not found"));
+            conversation.setTitle(newTitle);
+            return conversationRepository.save(conversation);
+        } catch (Exception e) {
+            log.error("Failed to update conversation title {}: {}", conversationId, e.getMessage());
+            throw new RuntimeException("Failed to update conversation title", e);
+        }
+    }
 }
