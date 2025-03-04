@@ -1,5 +1,6 @@
 import express from "express";
-import diary from "./diary";
+import diary from "./diaryAnalysis";
+// import users from "./users";
 
 const router = express.Router();
 
