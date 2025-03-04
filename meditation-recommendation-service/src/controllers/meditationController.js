@@ -20,6 +20,23 @@ const createMeditation = async (req, res) => {
     }
 };
 
+// const createMeditation = async (req, res) => {
+//     try {
+//         if (!req.body) {
+//             return res.status(400).json({ message: 'Title and content are required.' });
+//         }
+//         const meditation = await MeditationService.createMeditation(req.body);
+//         return res.status(201).json(meditation); 
+//     } catch (error) {
+//         if (error.name === 'ValidationError') {
+//             return res.status(400).json({ message: error.message });
+//         }
+
+//         console.error('Error creating meditation:', error);
+//         return res.status(500).json({ message: 'Internal Server Error' });
+        
+//     }
+// };
 const createMultipleMeditations = async (req, res) => {
     try {
         const meditationsData = req.body;

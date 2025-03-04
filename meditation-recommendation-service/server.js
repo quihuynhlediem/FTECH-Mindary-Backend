@@ -2,9 +2,9 @@ import express from 'express';
 import config from './src/config/config.js';
 import { connectDB } from './src/database/connection.js';
 // import routes from './src/routes/index.js';
-import router from './src/routes/index.js'
-import swaggerDocs from "./src/swaggerConfig.js"
-import cors from "cors"
+import router from './src/routes/index.js';
+import swaggerDocs from "./src/swaggerConfig.js";
+import cors from "cors";
 
 const app = express();
 app.use(cors());

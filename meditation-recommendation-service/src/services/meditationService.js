@@ -4,23 +4,56 @@ import { vectorStore } from '../database/connection.js';
 import { Document } from "@langchain/core/documents";
 import { v4 as uuidv4 } from "uuid";
 import { buildSearchPrompt } from '../utils/prompt.js';
+import Embedding from '../database/models/EmbeddingModel.js';
+import mongoose, { Types } from 'mongoose';
 
+
+// const createMeditation = async (title, content) => {
+//     try {
+//         const meditationId = uuidv4();
+
+//         await vectorStore.addDocuments(
+//             [{
+//                 pageContent: content,
+//                 metadata: { title }
+//             }],
+//             {
+//                 ids: [meditationId]
+//             }
+//         );
+
+//         return { success: true, message: "Meditation has been created successfully!", id: meditationId };
+//     } catch (error) {
+//         console.error("Error creating meditation:", error);
+//         return { success: false, message: "An error occurred while creating the meditation. Please try again later." };
+//     }
+// };
 
 const createMeditation = async (title, content) => {
     try {
-        const meditationId = uuidv4();
+        // Create a new meditation
+        const meditation = await Meditation.create({ title, content });
+        const messages = await llmModelConfig.prompt.invoke({
+            question: 'Given the following meditation content in the context section. Describe when someone should use this meditation based on their emotional state.',
+            context: content,
+        });
+        // console.log("LLM prompt:", messages);
 
+        const useCase = await llmModelConfig.llm.invoke(messages);
+        // console.log("LLM answer:", useCase.content);
+
+        // Add the embedding data (Meditation's usecase) to the vectorStore
+        const embeddingId = uuidv4();
         await vectorStore.addDocuments(
             [{
-                pageContent: content,
-                metadata: { title }
+                pageContent: useCase.content,
+                metadata: { _meditationId: meditation._id }
             }],
             {
-                ids: [meditationId]
+                ids: [embeddingId]
             }
         );
-
-        return { success: true, message: "Meditation has been created successfully!", id: meditationId };
+        return { meditation };
     } catch (error) {
         console.error("Error creating meditation:", error);
         return { success: false, message: "An error occurred while creating the meditation. Please try again later." };
@@ -106,19 +139,21 @@ const getAllMeditations = async () => {
 
 const getMeditationById = async (meditationId) => {
     try {
-        const meditation = await Meditation.findById(meditationId);
-        if (!meditation) {
-            return {
-                success: false,
-                message: "Meditation not found.",
-                data: null
-            };
-        }
-        return {
-            success: true,
-            message: "Meditation retrieved successfully.",
-            data: meditation
-        };
+        const embedding = await Embedding.findById(meditationId);
+        console.log('Embedding:', embedding);
+        // const meditation = await Meditation.findById(meditationId);
+        // if (!meditation) {
+        //     return {
+        //         success: false,
+        //         message: "Meditation not found.",
+        //         data: null
+        //     };
+        // }
+        // return {
+        //     success: true,
+        //     message: "Meditation retrieved successfully.",
+        //     data: meditation
+        // };
     } catch (error) {
         console.error("Error retrieving meditation by ID:", error);
         return {
@@ -182,8 +217,16 @@ const updateMeditation = async (meditationId, newTitle, newContent) => {
 
 const deleteMeditation = async (meditationId) => {
     try {
-        await vectorStore.delete({ ids: [meditationId] });
-        console.log('Deleted meditation');
+        // const embedding = await Embedding.findOne({ metadata: { meditationId } });
+        // console.log('Embedding:', embedding);
+        // await Meditation.deleteOne({ _id: meditationId });
+        // await vectorStore.delete({ ids: [meditationId] });
+        //console.log('Deleted meditation');
+        const embedding = await Embedding.findOne({ metadata: { _meditationId: meditationId } });
+        if (!embedding) {
+            throw new Error('Embedding not found');
+        }
+        await Embedding.deleteOne({ _id: embedding._id });
         return;
     } catch (error) {
         console.error('Error deleting meditation:', error);

@@ -55,7 +55,7 @@ const connectDB = async () => {
         await mongoose.connect(config.MONGODB_URI, { dbName: "test" });
         console.log("Successfully connected to MongoDB.");
 
-        const collection = mongoose.connection.db.collection(config.MONGODB_ATLAS_COLLECTION_NAME);
+        const collection = mongoose.connection.db.collection("embeddingMeditations");
 
         if (!vectorStore) {
             vectorStore = new MongoDBAtlasVectorSearch(llmModelConfig.embeddings, {
