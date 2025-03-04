@@ -86,42 +86,30 @@ const mentalHealthAnalyzeOutput = llmModel.withStructuredOutput(mentalHealthAnal
 
 const mentalHealthChain = mentalHealthAnalyzePrompt.pipe(mentalHealthAnalyzeOutput);
 
-export const analyze = async (req: Request, res: Response) => {
-
+export const analyzeDiaryEntry = async (userId: string, diaryId: string, input: string, uploadFile?: Express.Multer.File) => {
     try {
-        const formData = await req.body;
-        const userId = await formData['userId']
-        const input = await formData['diary']
-        const uploadFile = req.file;
+        // Invoke AI model
         const correlationAnalyzeResult = await correlationChain.invoke({ input });
         const emotionAnalyzeResult = await emotionChain.invoke({ input });
         const mentalHealthAnalyzeResult = await mentalHealthChain.invoke({ input });
-        const diaryId = await formData['diaryId']
-        // console.log(input)
-        let url;
+
+        let imageUrl: string | undefined;
         if (uploadFile) {
             const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-            const imageName = uniqueSuffix + "-" + uploadFile.originalname;
-			const fileBuffer = await sharp(uploadFile.buffer)
-				.jpeg({ quality: 100 })
-				.toBuffer();
-                console.log(uploadFile.mimetype);
-                console.log(fileBuffer)
-			url = await uploadToS3(fileBuffer, imageName, uploadFile.mimetype);
-            console.log(url)
+            const imageName = `${uniqueSuffix}-${uploadFile.originalname}`;
+            const fileBuffer = await sharp(uploadFile.buffer).jpeg({ quality: 80 }).toBuffer();
+            imageUrl = await uploadToS3(fileBuffer, imageName, uploadFile.mimetype);
         }
-        
-        // Create a new Diary document
+
+        // Create a new diary analysis record
         const newDiary = new DiaryAnalysisResult({
             senderId: userId,
             diaryId: diaryId,
-            emotionObjects: [
-                {
-                    emotionLevel: emotionAnalyzeResult.emotionLevel,
-                    emotionCategory: emotionAnalyzeResult.category,
-                    emotionSummary: emotionAnalyzeResult.summary,
-                },
-            ],
+            emotionObjects: [{
+                emotionLevel: emotionAnalyzeResult.emotionLevel,
+                emotionCategory: emotionAnalyzeResult.category,
+                emotionSummary: emotionAnalyzeResult.summary,
+            }],
             correlationObjects: correlationAnalyzeResult.correlations.map(correlation => ({
                 name: correlation.name,
                 description: correlation.description,
@@ -132,24 +120,21 @@ export const analyze = async (req: Request, res: Response) => {
                 description: symptom.description,
                 suggestions: symptom.suggestions,
             })),
-            imageLink: [],
-            recommendations: [], // Assuming recommendations are empty
+            imageLink: imageUrl ? [imageUrl] : [],
         });
 
-        // Save the new Diary document to the database
         await newDiary.save();
 
-        res.status(200).json({
-            result:
-            {
+        return {
+            success: true,
+            message: "Diary analysis completed successfully",
+            result: {
                 emotion: emotionAnalyzeResult,
                 correlation: correlationAnalyzeResult,
                 mentalHealth: mentalHealthAnalyzeResult,
             },
-        });
-        return;
+        };
     } catch (error) {
-        res.status(500).json({ message: error });
-        return;
+        throw new Error(error.message || "Error processing diary analysis");
     }
-}
+};

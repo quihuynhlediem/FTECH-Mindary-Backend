@@ -51,17 +51,6 @@ const diarySchema = new mongoose.Schema(
                 }
             }
         ],
-        recommendations: [
-            {
-                type: Object,
-                practice: {
-                    type: String,
-                },
-                action: {
-                    type: String,
-                }
-            }
-        ],
         imageLink: [
             String
         ]
