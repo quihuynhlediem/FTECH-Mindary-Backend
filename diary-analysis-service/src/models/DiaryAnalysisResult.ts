@@ -5,7 +5,7 @@ const diarySchema = new mongoose.Schema(
         senderId: {
             type: String,
         },
-        content: {
+        diaryId: {
             type: String,
         },
         emotionObjects: [
@@ -51,24 +51,10 @@ const diarySchema = new mongoose.Schema(
                 }
             }
         ],
-        recommendations: [
-            {
-                type: Object,
-                practice: {
-                    type: String,
-                },
-                action: {
-                    type: String,
-                }
-            }
-        ],
-        imageLink: [
-            String
-        ]
     },
     {timestamps: true}
 );
 
-const Diary = mongoose.models.diaries || mongoose.model("diaries", diarySchema);
+const DiaryAnalysisResult = mongoose.models.diaries || mongoose.model("diaries", diarySchema);
 
-export default Diary;
+export default DiaryAnalysisResult;
