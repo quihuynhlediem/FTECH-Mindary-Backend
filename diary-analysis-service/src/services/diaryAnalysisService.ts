@@ -172,7 +172,6 @@ export const analyzeDiaryEntry = async (
                 description: symptom.description,
                 suggestions: symptom.suggestions,
             })),
-            imageLink: imageUrl ? [imageUrl] : [],
         });
 
         await newDiary.save();
@@ -186,3 +185,19 @@ export const analyzeDiaryEntry = async (
         throw new Error(error.message || "Error processing diary analysis");
     }
 };
+
+// Get diary analysis by diaryId
+export const getDiaryAnalysis = async (diaryId: string) => {
+    return await DiaryAnalysisResult.findOne({ diaryId });
+};
+
+// Update diary analysis by diaryId
+export const updateDiaryAnalysis = async (diaryId: string, updatedData: any) => {
+    return await DiaryAnalysisResult.findOneAndUpdate({ diaryId }, updatedData, { new: true });
+};
+
+// Delete diary analysis by diaryId
+export const deleteDiaryAnalysis = async (diaryId: string) => {
+    return await DiaryAnalysisResult.findOneAndDelete({ diaryId });
+};
+

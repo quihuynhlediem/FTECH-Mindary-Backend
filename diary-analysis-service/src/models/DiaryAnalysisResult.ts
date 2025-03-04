@@ -51,9 +51,6 @@ const diarySchema = new mongoose.Schema(
                 }
             }
         ],
-        imageLink: [
-            String
-        ]
     },
     {timestamps: true}
 );
