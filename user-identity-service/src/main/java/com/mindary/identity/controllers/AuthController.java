@@ -5,6 +5,7 @@ import com.mindary.identity.dto.response.AuthResponse;
 import com.mindary.identity.dto.request.LoginRequest;
 import com.mindary.identity.dto.request.SignUpRequest;
 import com.mindary.identity.dto.response.VerifyTokenResponse;
+import com.mindary.identity.models.User;
 import com.mindary.identity.security.SystemUserDetails;
 import com.mindary.identity.services.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -72,7 +73,7 @@ public class AuthController {
                 signUpRequest.getUsername(),
                 signUpRequest.getPassword(),
                 signUpRequest.getEmail(),
-                signUpRequest.getRole()
+                User.UserRole.CUSTOMER
         );
 
         UUID userId = extractUserId(userDetails);

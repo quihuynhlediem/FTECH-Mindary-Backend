@@ -6,6 +6,7 @@ import com.mindary.diary.models.DiaryEntity;
 import com.mindary.diary.models.DiaryImage;
 import com.mindary.diary.services.DiaryImageService;
 import com.mindary.diary.services.DiaryService;
+import com.mindary.diary.services.RabbitMQSender;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -39,6 +40,7 @@ public class DiaryController {
     private final DiaryService diaryService;
     private final Mapper<DiaryEntity, DiaryDto> diaryMapper;
     private final DiaryImageService diaryImageService;
+    private final RabbitMQSender rabbitMQSender;
 
     @Operation(summary = "Get diaries by user ID", description = "Retrieve a paginated list of diaries for a specific user.")
     @ApiResponses(value = {
@@ -129,6 +131,8 @@ public class DiaryController {
         Set<DiaryImage> savedImages = diaryImageService.uploadAndSaveImages(photos, savedDiary);
 
         savedDiary.setImages(savedImages);
+
+        rabbitMQSender.sendDiary(savedDiary);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(diaryMapper.mapTo(savedDiary));
     }
