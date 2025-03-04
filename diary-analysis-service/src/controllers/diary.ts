@@ -4,7 +4,7 @@ import { llmModel } from "../lib/modelConfiguration"
 import { z, ZodVoid } from "zod";
 import sharp from 'sharp';
 import { uploadToS3 } from '../lib/awsConfiguration';
-import Diary from '../models/Diary';
+import DiaryAnalysisResult from '../models/DiaryAnalysisResult';
 
 const emotionAnalyzePrompt = ChatPromptTemplate.fromTemplate(
     "You are a helpful and enthusiastic psychological therapist. You can analyze the following personal diary entry carefully.\
@@ -96,6 +96,7 @@ export const analyze = async (req: Request, res: Response) => {
         const correlationAnalyzeResult = await correlationChain.invoke({ input });
         const emotionAnalyzeResult = await emotionChain.invoke({ input });
         const mentalHealthAnalyzeResult = await mentalHealthChain.invoke({ input });
+        const diaryId = await formData['diaryId']
         // console.log(input)
         let url;
         if (uploadFile) {
@@ -111,9 +112,9 @@ export const analyze = async (req: Request, res: Response) => {
         }
         
         // Create a new Diary document
-        const newDiary = new Diary({
+        const newDiary = new DiaryAnalysisResult({
             senderId: userId,
-            content: input,
+            diaryId: diaryId,
             emotionObjects: [
                 {
                     emotionLevel: emotionAnalyzeResult.emotionLevel,
