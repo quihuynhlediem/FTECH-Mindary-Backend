@@ -1,15 +1,21 @@
+export interface DiaryDto {
+    id: string,
+    userId: string,
+    content: string,
+}
+
 export interface DiaryAnalysisDto {
-    senderId: string
+    senderId: string,
     diaryId: string,
-    emotionObjects: [Emotion],
-    correlationObjects: [Correlation],
-    symptomObjects: [Symptom]
+    emotion: Emotion,
+    correlations: [Correlation],
+    symptoms: [Symptom]
 }
 
 export interface Emotion {
     emotionLevel: string,
-    emotionCategory: string,
-    emotionSummary: string
+    category: [string],
+    summary: string,
 }
 
 export interface Correlation {

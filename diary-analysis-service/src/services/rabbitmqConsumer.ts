@@ -1,5 +1,8 @@
 import { getChannel } from "../configs/rabbitmqConfig";
 import config from "../configs/systemConfig";
+import { DiaryDto } from "../types/diary";
+import { analyzeDiaryEntry } from "./diaryAnalysisService";
+import {publishAnalysisResult} from "./rabbitmqPublisher";
 
 const receiveDiary = async () => {
     const channel = getChannel();
@@ -8,12 +11,18 @@ const receiveDiary = async () => {
         return;
     }
 
-    await channel.consume(config.DIARY_ENTRY_QUEUE, (msg: any) => {
+    await channel.consume(config.DIARY_ENTRY_QUEUE, async (msg: any) => {
         if (msg !== null) {
             try {
-                const diaryData = msg.content.toString(); // Convert Buffer to string
-                const parsedData = JSON.parse(diaryData); // Parse JSON if applicable
-                console.log("Received Diary Entry:", parsedData);
+                const diaryData: string = msg.content.toString(); // Convert Buffer to string
+                const parsedData: DiaryDto = JSON.parse(diaryData); // Parse JSON if applicable
+                console.log("Received Diary Entry:", parsedData.content);
+
+                const diaryAnalysisResult = await analyzeDiaryEntry(parsedData.userId, parsedData.id, parsedData.content)
+                console.log("Diary Analysis Result:" + diaryAnalysisResult)
+
+                await publishAnalysisResult(diaryAnalysisResult)
+                console.log("Published Analysis Result")
 
                 channel.ack(msg); // Acknowledge message after processing
             } catch (error) {

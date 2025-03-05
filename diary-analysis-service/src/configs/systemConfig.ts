@@ -17,9 +17,9 @@ const config = {
     RABBITMQ_CONNECTION_STRING: 'amqp://guest:guest@localhost:5672',
     EXCHANGE_NAME: 'diary_exchange',
     ANALYSIS_ROUTING_KEY: 'diary_analysis_routing_key',
-    FEEDBACK_ROUTING_KEY: 'diary_analysis_result_routing_key',
+    RESULT_ROUTING_KEY: 'diary_analysis_result_routing_key',
     DIARY_ENTRY_QUEUE: 'diary_analysis',
-    FEEDBACK_QUEUE: 'diary_analysis_result',
+    RESULT_QUEUE: 'diary_analysis_result',
 };
 
 export default config;

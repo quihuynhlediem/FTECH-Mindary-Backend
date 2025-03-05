@@ -1,5 +1,6 @@
 package com.mindary.diary.controllers;
 
+import com.mindary.diary.dto.AnalysisResultDto;
 import com.mindary.diary.dto.DiaryDto;
 import com.mindary.diary.mappers.Mapper;
 import com.mindary.diary.models.DiaryEntity;
@@ -111,30 +112,27 @@ public class DiaryController {
     })
     @PreAuthorize("#userId.toString() == authentication.name")
     @PostMapping(path = "/user/{userId}")
-    public ResponseEntity<DiaryDto> createDiary(
+    public ResponseEntity<AnalysisResultDto> createDiary(
             @PathVariable("userId") UUID userId,
             @RequestParam("diary") String diary,
             @RequestParam(value = "images", required = false) List<MultipartFile> photos,
             @RequestParam(value = "timezone") String timezone
     ) throws Exception {
         log.info("Creating diary");
-
         Optional<DiaryEntity> existingDiary = diaryService.findByUserIdAndDate(userId, timezone);
 
         if (existingDiary.isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(diaryMapper.mapTo(existingDiary.get()));
+                    .body(new AnalysisResultDto());
         }
-
         DiaryEntity savedDiary = diaryService.create(userId, diary);
-
         Set<DiaryImage> savedImages = diaryImageService.uploadAndSaveImages(photos, savedDiary);
-
         savedDiary.setImages(savedImages);
-
         rabbitMQSender.sendDiary(savedDiary);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(diaryMapper.mapTo(savedDiary));
+        AnalysisResultDto analysisResultDto = diaryService.analyze(savedDiary);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(analysisResultDto);
     }
 
     @Operation(summary = "Create a diary on a target date", description = "Create a diary entry for a user on a specific date.")
@@ -170,9 +168,10 @@ public class DiaryController {
         }
 
         DiaryEntity savedDiary = diaryService.create(userId, diary);
-
         Set<DiaryImage> savedDiaryImages = diaryImageService.uploadAndSaveImages(images, savedDiary);
         savedDiary.setImages(savedDiaryImages);
+
+        AnalysisResultDto analysisResultDto = diaryService.analyze(savedDiary);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(diaryMapper.mapTo(savedDiary));
     }

@@ -9,7 +9,7 @@ export const diaryAnalysisResult = async (req: Request, res: Response): Promise<
             return;
         }
 
-        const result = await analyzeDiaryEntry(userId, diaryId, diary, req.file);
+        const result = await analyzeDiaryEntry(userId, diaryId, diary);
 
         res.status(200).json(result);
     } catch (error) {

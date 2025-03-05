@@ -22,7 +22,6 @@ public class RabbitMQSenderImpl implements RabbitMQSender {
 
     @Override
     public void sendDiary(DiaryEntity diary) {
-        log.info("Sending diary: {}", diary.toString());
         rabbitTemplate.convertAndSend(exchange, routingKey, diary);
     }
 }
