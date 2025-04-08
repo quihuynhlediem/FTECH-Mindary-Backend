@@ -17,6 +17,25 @@ export const diaryAnalysisResult = async (req: Request, res: Response): Promise<
     }
 };
 
+export const getAnalysisResult = async (req: Request, res: Response): Promise<void> => { 
+ 	try {
+            const userId = req.query.userId as string;
+            // const date = new Date(params.date as string);
+          // const diaryId = req.query.diaryId as string;
+          const date = req.query.createdAt as string;
+            // let previousDate = new Date(params.date as string);
+          // previousDate = new Date(previousDate.setDate(date.getDate() - 7));
+          
+
+    
+            const result = await getDiaryAnalysis(userId, date);
+            res.status(200).json(result);
+        } catch (error) {
+            res.status(500).json({ message: error.message || "Internal server error" });
+        }
+
+}
+
 // // Get Analysis Result by diaryId
 // export const getAnalysisResult = async (req: Request, res: Response): Promise<void> => {
 //     try {

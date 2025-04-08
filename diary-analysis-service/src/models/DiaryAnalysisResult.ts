@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const diarySchema = new mongoose.Schema(
     {
-        senderId: {
+        userId: {
             type: String,
         },
         diaryId: {
