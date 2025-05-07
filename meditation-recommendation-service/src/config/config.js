@@ -13,7 +13,12 @@ const config = {
     JWT_ALGORITHM: 'HS256',
     SERVICE_TITLE: 'Meditation Recommendation Service',
     SERVICE_VERSION: '1.0.0',
-    SERVICE_DESCRIPTION: 'This is the API documentation for Meditation Recommendation Service.'
+    SERVICE_DESCRIPTION: 'This is the API documentation for Meditation Recommendation Service.',
+    EXCHANGE_NAME: 'diary_exchange',
+    ANALYSIS_ROUTING_KEY: 'diary_analysis_routing_key',
+    FEEDBACK_ROUTING_KEY: 'diary_analysis_result_routing_key',
+    DIARY_ENTRY_QUEUE: 'diary_analysis',
+    FEEDBACK_QUEUE: 'diary_analysis_result',
 };
 
 export default config;

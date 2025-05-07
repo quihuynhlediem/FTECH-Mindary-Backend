@@ -1,5 +1,56 @@
 import mongoose from "mongoose";
 
+const emotionSchema = new mongoose.Schema(
+    {
+        emotionLevel: {
+            type: String,
+        },
+        category: [{
+            type: String,
+        }],
+        summary: {
+            type: String,
+        }
+    },
+    {
+        _id: false
+    }
+)
+
+const correlationSchema = new mongoose.Schema(
+    {
+        name: {
+            type: String,
+        },
+        description: {
+            type: String,
+        },
+    },
+    {
+        _id: false
+    }
+)
+
+const symptomSchema = new mongoose.Schema(
+    {
+        name: {
+            type: String,
+        },
+        risk: {
+            type: String,
+        },
+        description: {
+            type: String,
+        },
+        suggestions: {
+            type: String,
+        }
+    },
+    {
+        _id: false
+    }
+)
+
 const diarySchema = new mongoose.Schema(
     {
         userId: {
@@ -8,52 +59,15 @@ const diarySchema = new mongoose.Schema(
         diaryId: {
             type: String,
         },
-        emotionObjects: [
-            {
-                type: Object,
-                emotionLevel: {
-                    type: String,
-                },
-                emotionCategory: {
-                    type: String,
-                },
-                emotionSummary: {
-                    type: String,
-                }
-            }
-        ],
-        correlationObjects: [
-            {
-                type: Object,
-                name: {
-                    type: String,
-                },
-                description: {
-                    type: String,
-                },
-            }
-        ],
-
-        symptomObjects: [
-            {
-                type: Object,
-                name: {
-                    type: String,
-                },
-                risk: {
-                    type: String,
-                },
-                description: {
-                    type: String,
-                },
-                suggestions: {
-                    type: String,
-                }
-            }
-        ],
+        emotion: emotionSchema,
+        correlations: [correlationSchema],
+        symptoms: [symptomSchema],
     },
     {timestamps: true}
 );
+
+diarySchema.index({ senderId: 1 })
+diarySchema.index({ diaryId: 1 })
 
 const DiaryAnalysisResult = mongoose.models.diaries || mongoose.model("diaries", diarySchema);
 

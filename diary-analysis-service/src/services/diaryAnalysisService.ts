@@ -2,8 +2,8 @@ import { ChatPromptTemplate } from "@langchain/core/prompts"
 import { llmModel } from "../lib/modelConfiguration"
 import { z, ZodVoid } from "zod";
 import sharp from 'sharp';
-import { uploadToS3 } from '../lib/awsConfiguration';
-import DiaryAnalysisResult from '../models/DiaryAnalysisResult';
+import {DiaryAnalysisDto, Correlation, Symptom, Emotion} from '../types/diary';
+import DiaryAnalysisResult from "../models/DiaryAnalysisResult"
 
 // const emotionAnalyzePrompt = ChatPromptTemplate.fromTemplate(
 //     "You are a helpful and enthusiastic psychological therapist. You can analyze the following personal diary entry carefully.\
@@ -136,57 +136,49 @@ const combinedAnalyzeOutput = llmModel.withStructuredOutput(combinedAnalyzeSchem
 
 const combinedChain = combinedAnalyzePrompt.pipe(combinedAnalyzeOutput);
 
-
 export const analyzeDiaryEntry = async (
     userId: string,
     diaryId: string,
     input: string,
-    uploadFile?: Express.Multer.File
 ) => {
     try {
-        const analysisResult = await combinedChain.invoke({ input });
+        const analysisResult: DiaryAnalysisDto = await combinedChain.invoke({ input }) as DiaryAnalysisDto;
 
-        let imageUrl: string | undefined;
-        if (uploadFile) {
-            const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-            const imageName = `${uniqueSuffix}-${uploadFile.originalname}`;
-            const fileBuffer = await sharp(uploadFile.buffer).jpeg({ quality: 80 }).toBuffer();
-            imageUrl = await uploadToS3(fileBuffer, imageName, uploadFile.mimetype);
+        let diaryAnalysisResultEntity = await DiaryAnalysisResult.create({
+            senderId: userId,
+            diaryId: diaryId
+        })
+
+        if (analysisResult.emotion) {
+            diaryAnalysisResultEntity.emotion = analysisResult.emotion;
         }
 
-        const newDiary = new DiaryAnalysisResult({
-            senderId: userId,
-            diaryId: diaryId,
-            emotionObjects: [{
-                emotionLevel: analysisResult.emotion.emotionLevel,
-                emotionCategory: analysisResult.emotion.category,
-                emotionSummary: analysisResult.emotion.summary,
-            }],
-            correlationObjects: analysisResult.correlations.map(correlation => ({
+        if (analysisResult.correlations) {
+            diaryAnalysisResultEntity.correlations = analysisResult.correlations.map((correlation: Correlation) => ({
                 name: correlation.name,
                 description: correlation.description,
-            })),
-            symptomObjects: analysisResult.symptoms.map(symptom => ({
-                name: symptom.name,
-                risk: symptom.risk,
-                description: symptom.description,
-                suggestions: symptom.suggestions,
-            })),
-        });
+            }))
+        }
 
-        await newDiary.save();
+        if (analysisResult.symptoms) {
+            diaryAnalysisResultEntity.symptoms = analysisResult.symptoms.map((symptom: Symptom) => ({
+                    name: symptom.name,
+                    risk: symptom.risk,
+                    description: symptom.description,
+                    suggestions: symptom.suggestions,
+            }))
+        }
+        console.log(diaryAnalysisResultEntity)
 
-        return {
-            success: true,
-            message: "Diary analysis completed successfully",
-            result: analysisResult,
-        };
+        diaryAnalysisResultEntity = await diaryAnalysisResultEntity.save()
+        return diaryAnalysisResultEntity
     } catch (error) {
         throw new Error(error.message || "Error processing diary analysis");
     }
 };
 
 // Get diary analysis by diaryId
+<<<<<<< HEAD
 export const getDiaryAnalysis = async (userId: string, date: string) => {
               // Parse the date and create a range for the whole day
               const startDate = new Date(date);
@@ -202,15 +194,19 @@ export const getDiaryAnalysis = async (userId: string, date: string) => {
                 },
               });
     return diaries;
+=======
+export const getDiaryAnalysis = async (diaryId: string) => {
+    return DiaryAnalysisResult.findOne({diaryId});
+>>>>>>> main
 };
 
 // Update diary analysis by diaryId
 export const updateDiaryAnalysis = async (diaryId: string, updatedData: any) => {
-    return await DiaryAnalysisResult.findOneAndUpdate({ diaryId }, updatedData, { new: true });
+    return DiaryAnalysisResult.findOneAndUpdate({diaryId}, updatedData, {new: true});
 };
 
 // Delete diary analysis by diaryId
 export const deleteDiaryAnalysis = async (diaryId: string) => {
-    return await DiaryAnalysisResult.findOneAndDelete({ diaryId });
+    return DiaryAnalysisResult.findOneAndDelete({diaryId});
 };
 
